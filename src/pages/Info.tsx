@@ -1,19 +1,12 @@
-import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Home, Wifi, Activity, Lightbulb, Fan, Thermometer, Flame, Droplets, Power } from "lucide-react";
+import { Home, Wifi, Activity, Thermometer, Flame, Droplets } from "lucide-react";
 import { SensorCard } from "@/components/SensorCard";
-import { ControlCard } from "@/components/ControlCard";
 import { Separator } from "@/components/ui/separator";
 
 const Info = () => {
-  // Indoor states
-  const [lightOn, setLightOn] = useState(false);
-  const [fanOn, setFanOn] = useState(false);
+  // Sensor values
   const temperature = 26;
   const gasLevel = 15;
-
-  // Outdoor states
-  const [pumpOn, setPumpOn] = useState(false);
   const humidity = 65;
 
   return (
@@ -70,33 +63,17 @@ const Info = () => {
           </Card>
         </div>
 
-        {/* Indoor Section */}
-        <div className="mb-8">
+        {/* All Sensor Readings */}
+        <div>
           <div className="flex items-center gap-3 mb-4">
-            <Home className="w-6 h-6 text-primary" />
-            <h2 className="text-2xl font-bold">Trong Nhà</h2>
+            <Activity className="w-6 h-6 text-primary" />
+            <h2 className="text-2xl font-bold">Chỉ Số Cảm Biến</h2>
           </div>
           <Separator className="mb-6" />
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <ControlCard
-              title="Đèn"
-              icon={Lightbulb}
-              isOn={lightOn}
-              onToggle={setLightOn}
-              iconColor="text-yellow-400"
-            />
-            
-            <ControlCard
-              title="Quạt"
-              icon={Fan}
-              isOn={fanOn}
-              onToggle={setFanOn}
-              iconColor="text-blue-400"
-            />
-            
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <SensorCard
-              title="Nhiệt Độ"
+              title="Nhiệt Độ Trong Nhà"
               icon={Thermometer}
               value={temperature}
               unit="°C"
@@ -105,7 +82,7 @@ const Info = () => {
             />
             
             <SensorCard
-              title="Khí Gas"
+              title="Khí Gas Trong Nhà"
               icon={Flame}
               value={gasLevel}
               unit="ppm"
@@ -113,33 +90,14 @@ const Info = () => {
               progress={gasLevel / 100 * 100}
               alert={gasLevel > 50}
             />
-          </div>
-        </div>
 
-        {/* Outdoor Section */}
-        <div>
-          <div className="flex items-center gap-3 mb-4">
-            <Droplets className="w-6 h-6 text-secondary" />
-            <h2 className="text-2xl font-bold">Vườn Rau</h2>
-          </div>
-          <Separator className="mb-6" />
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <SensorCard
-              title="Độ Ẩm Đất"
+              title="Độ Ẩm Đất Vườn Rau"
               icon={Droplets}
               value={humidity}
               unit="%"
               iconColor="text-blue-400"
               progress={humidity}
-            />
-            
-            <ControlCard
-              title="Máy Bơm Nước"
-              icon={Power}
-              isOn={pumpOn}
-              onToggle={setPumpOn}
-              iconColor="text-secondary"
             />
           </div>
         </div>
