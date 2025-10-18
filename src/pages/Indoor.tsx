@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
 import { Lightbulb, Fan, Thermometer, Flame } from "lucide-react";
 import { SensorCard } from "@/components/SensorCard";
 import { ControlCard } from "@/components/ControlCard";
+import { PageHeader } from "@/components/PageHeader";
 
 const Indoor = () => {
   const [lightOn, setLightOn] = useState(false);
@@ -14,10 +13,11 @@ const Indoor = () => {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          Trong Nhà
-        </h1>
-        <p className="text-muted-foreground mb-8">Điều khiển thiết bị trong nhà</p>
+        <PageHeader
+          title="Trong Nhà"
+          description="Điều khiển thiết bị trong nhà"
+          gradient="from-primary to-accent"
+        />
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <ControlCard

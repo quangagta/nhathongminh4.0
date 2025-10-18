@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Home, Wifi, Activity, Thermometer, Flame, Droplets } from "lucide-react";
 import { SensorCard } from "@/components/SensorCard";
 import { Separator } from "@/components/ui/separator";
+import { PageHeader } from "@/components/PageHeader";
 
 const Info = () => {
   // Sensor values
@@ -12,10 +13,11 @@ const Info = () => {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-          Thông Tin Tổng Quan
-        </h1>
-        <p className="text-muted-foreground mb-8">Toàn bộ thông tin vườn rau và trong nhà</p>
+        <PageHeader
+          title="Thông Tin Tổng Quan"
+          description="Toàn bộ thông tin vườn rau và trong nhà"
+          gradient="from-primary to-secondary"
+        />
         
         {/* System Info */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
