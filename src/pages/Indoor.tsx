@@ -1,12 +1,12 @@
-import { useState } from "react";
 import { Lightbulb, Fan, Thermometer, Flame } from "lucide-react";
 import { SensorCard } from "@/components/SensorCard";
 import { ControlCard } from "@/components/ControlCard";
 import { PageHeader } from "@/components/PageHeader";
+import { useDeviceState } from "@/hooks/useDeviceState";
 
 const Indoor = () => {
-  const [lightOn, setLightOn] = useState(false);
-  const [fanOn, setFanOn] = useState(false);
+  const [lightOn, setLightOn] = useDeviceState("indoor-light", false);
+  const [fanOn, setFanOn] = useDeviceState("indoor-fan", false);
   const temperature = 26;
   const gasLevel = 15;
 

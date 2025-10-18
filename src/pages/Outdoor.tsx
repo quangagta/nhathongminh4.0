@@ -1,11 +1,11 @@
-import { useState } from "react";
 import { Droplets, Power } from "lucide-react";
 import { SensorCard } from "@/components/SensorCard";
 import { ControlCard } from "@/components/ControlCard";
 import { PageHeader } from "@/components/PageHeader";
+import { useDeviceState } from "@/hooks/useDeviceState";
 
 const Outdoor = () => {
-  const [pumpOn, setPumpOn] = useState(false);
+  const [pumpOn, setPumpOn] = useDeviceState("outdoor-pump", false);
   const humidity = 65;
 
   return (
