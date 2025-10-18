@@ -16,7 +16,7 @@ export const PageHeader = ({ title, description, gradient = "from-primary to-acc
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => navigate(-1)}
+        onClick={() => navigate("/")}
         className="mb-4 hover:bg-muted/50 transition-all"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
