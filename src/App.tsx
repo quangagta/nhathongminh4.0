@@ -7,7 +7,6 @@ import Index from "./pages/Index";
 import Indoor from "./pages/Indoor";
 import Outdoor from "./pages/Outdoor";
 import Info from "./pages/Info";
-import Chatbot from "./pages/Chatbot";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,7 +21,6 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/indoor" element={<Indoor />} />
           <Route path="/outdoor" element={<Outdoor />} />
-          <Route path="/chatbot" element={<Chatbot />} />
           <Route path="/info" element={<Info />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
