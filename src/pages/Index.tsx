@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { Home, TreePine, Info, Activity, MessageSquare } from "lucide-react";
+import { Home, TreePine, Info, Activity } from "lucide-react";
 
 const Index = () => {
   return (
@@ -24,7 +24,7 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Link to="/indoor">
               <Card className="p-8 bg-card border-border hover:shadow-xl hover:shadow-primary/20 transition-all hover:scale-105 cursor-pointer group">
                 <div className="flex flex-col items-center text-center">
@@ -45,18 +45,6 @@ const Index = () => {
                   </div>
                   <h3 className="text-2xl font-bold mb-2">Vườn Rau</h3>
                   <p className="text-muted-foreground">Độ ẩm đất, máy bơm nước</p>
-                </div>
-              </Card>
-            </Link>
-
-            <Link to="/chatbot">
-              <Card className="p-8 bg-card border-border hover:shadow-xl hover:shadow-purple-400/20 transition-all hover:scale-105 cursor-pointer group">
-                <div className="flex flex-col items-center text-center">
-                  <div className="p-4 rounded-full bg-purple-400/10 mb-4 group-hover:bg-purple-400/20 transition-all">
-                    <MessageSquare className="w-8 h-8 text-purple-400" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-2">Trợ Lý AI</h3>
-                  <p className="text-muted-foreground">Chat với trợ lý thông minh</p>
                 </div>
               </Card>
             </Link>
