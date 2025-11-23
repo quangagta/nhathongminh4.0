@@ -170,6 +170,7 @@ void startConfigMode() {
   // Thiết lập các route cho web server
   server.on("/", HTTP_GET, handleRoot);
   server.on("/scan", HTTP_GET, handleScan);
+  server.on("/test", HTTP_POST, handleTest);
   server.on("/save", HTTP_POST, handleSave);
   server.on("/reset", HTTP_GET, handleReset);
   server.onNotFound(handleNotFound);
@@ -226,6 +227,8 @@ void handleRoot() {
   html += "<div id='config-form' style='display:none;'>";
   html += "<h3>Kết nối: <span id='selected-ssid'></span></h3>";
   html += "<input type='password' id='password' placeholder='Nhập mật khẩu WiFi'>";
+  html += "<div id='test-result' style='margin:10px 0; padding:10px; border-radius:5px; display:none;'></div>";
+  html += "<button class='btn-secondary' onclick='testConnection()'>🔌 Test Kết Nối</button>";
   html += "<button class='btn-primary' onclick='saveConfig()'>💾 Lưu và Kết Nối</button>";
   html += "</div>";
   html += "<button class='btn-danger' onclick='resetConfig()'>🔄 Xóa Cấu Hình</button>";
@@ -251,6 +254,32 @@ void handleRoot() {
   html += "  event.target.closest('.wifi-item').classList.add('selected');";
   html += "  document.getElementById('selected-ssid').textContent = ssid;";
   html += "  document.getElementById('config-form').style.display = 'block';";
+  html += "}";
+  html += "function testConnection() {";
+  html += "  const password = document.getElementById('password').value;";
+  html += "  const result = document.getElementById('test-result');";
+  html += "  if (!selectedSSID) { alert('Vui lòng chọn WiFi!'); return; }";
+  html += "  result.style.display = 'block';";
+  html += "  result.style.background = '#fff3cd';";
+  html += "  result.style.color = '#856404';";
+  html += "  result.textContent = '⏳ Đang test kết nối...';";
+  html += "  fetch('/test', { method: 'POST', headers: {'Content-Type': 'application/x-www-form-urlencoded'},";
+  html += "    body: 'ssid=' + encodeURIComponent(selectedSSID) + '&password=' + encodeURIComponent(password)";
+  html += "  }).then(r => r.json()).then(data => {";
+  html += "    if (data.success) {";
+  html += "      result.style.background = '#d4edda';";
+  html += "      result.style.color = '#155724';";
+  html += "      result.textContent = '✓ ' + data.message;";
+  html += "    } else {";
+  html += "      result.style.background = '#f8d7da';";
+  html += "      result.style.color = '#721c24';";
+  html += "      result.textContent = '✗ ' + data.message;";
+  html += "    }";
+  html += "  }).catch(err => {";
+  html += "    result.style.background = '#f8d7da';";
+  html += "    result.style.color = '#721c24';";
+  html += "    result.textContent = '✗ Lỗi kết nối';";
+  html += "  });";
   html += "}";
   html += "function saveConfig() {";
   html += "  const password = document.getElementById('password').value;";
@@ -289,6 +318,77 @@ void handleScan() {
   
   Serial.println("Tìm thấy " + String(n) + " mạng WiFi");
   server.send(200, "application/json", json);
+}
+
+// Test kết nối WiFi và Firebase
+void handleTest() {
+  if (server.hasArg("ssid") && server.hasArg("password")) {
+    String ssid = server.arg("ssid");
+    String password = server.arg("password");
+    
+    Serial.println("\n=== TEST KẾT NỐI ===");
+    Serial.print("SSID: ");
+    Serial.println(ssid);
+    
+    // Ngắt kết nối hiện tại
+    WiFi.disconnect();
+    delay(100);
+    
+    // Thử kết nối WiFi
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid.c_str(), password.c_str());
+    
+    int attempts = 0;
+    while (WiFi.status() != WL_CONNECTED && attempts < 20) {
+      delay(500);
+      Serial.print(".");
+      attempts++;
+    }
+    
+    String json = "{";
+    
+    if (WiFi.status() == WL_CONNECTED) {
+      Serial.println("\n✓ WiFi kết nối thành công!");
+      Serial.print("IP: ");
+      Serial.println(WiFi.localIP());
+      
+      // Test Firebase connection
+      FirebaseData testData;
+      Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
+      
+      bool firebaseOk = false;
+      if (Firebase.getFloat(testData, "/sensors/current/temperature")) {
+        float temp = testData.floatData();
+        Serial.printf("✓ Firebase OK! Nhiệt độ: %.1f°C\n", temp);
+        firebaseOk = true;
+        json += "\"success\":true,";
+        json += "\"message\":\"WiFi và Firebase kết nối thành công! Nhiệt độ: " + String(temp, 1) + "°C\"";
+      } else {
+        Serial.println("✗ Không đọc được Firebase!");
+        Serial.println("Lỗi: " + testData.errorReason());
+        json += "\"success\":false,";
+        json += "\"message\":\"WiFi OK nhưng không kết nối được Firebase\"";
+      }
+      
+      // Ngắt kết nối test
+      WiFi.disconnect();
+    } else {
+      Serial.println("\n✗ Không kết nối được WiFi!");
+      json += "\"success\":false,";
+      json += "\"message\":\"Không kết nối được WiFi. Kiểm tra lại mật khẩu!\"";
+    }
+    
+    json += "}";
+    
+    // Quay lại chế độ AP
+    WiFi.mode(WIFI_AP);
+    WiFi.softAP(AP_SSID, AP_PASSWORD);
+    
+    Serial.println("===================\n");
+    server.send(200, "application/json", json);
+  } else {
+    server.send(400, "application/json", "{\"success\":false,\"message\":\"Thiếu thông tin!\"}");
+  }
 }
 
 // Lưu cấu hình WiFi
