@@ -3,12 +3,28 @@ import { SensorCard } from "@/components/SensorCard";
 import { ControlCard } from "@/components/ControlCard";
 import { PageHeader } from "@/components/PageHeader";
 import { useDeviceState } from "@/hooks/useDeviceState";
+import { useFirebaseData } from "@/hooks/useFirebaseData";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 const Indoor = () => {
   const [lightOn, setLightOn] = useDeviceState("indoor-light", false);
   const [fanOn, setFanOn] = useDeviceState("indoor-fan", false);
-  const temperature = 26;
-  const gasLevel = 15;
+  const { data, loading, error } = useFirebaseData();
+  const { toast } = useToast();
+
+  const temperature = data.temperature;
+  const gasLevel = data.gasLevel;
+
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Lỗi kết nối",
+        description: error,
+        variant: "destructive"
+      });
+    }
+  }, [error, toast]);
 
   return (
     <div className="min-h-screen bg-background p-6">

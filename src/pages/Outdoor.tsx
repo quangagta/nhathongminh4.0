@@ -3,10 +3,26 @@ import { SensorCard } from "@/components/SensorCard";
 import { ControlCard } from "@/components/ControlCard";
 import { PageHeader } from "@/components/PageHeader";
 import { useDeviceState } from "@/hooks/useDeviceState";
+import { useFirebaseData } from "@/hooks/useFirebaseData";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 const Outdoor = () => {
   const [pumpOn, setPumpOn] = useDeviceState("outdoor-pump", false);
-  const humidity = 65;
+  const { data, loading, error } = useFirebaseData();
+  const { toast } = useToast();
+
+  const humidity = data.humidity;
+
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Lỗi kết nối",
+        description: error,
+        variant: "destructive"
+      });
+    }
+  }, [error, toast]);
 
   return (
     <div className="min-h-screen bg-background p-6">
