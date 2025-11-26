@@ -22,18 +22,13 @@
     <script type="module" src="/src/main.tsx"></script>
     
     <style>
-      /* Chatbox draggable styles */
-      #chatbase-bubble-button,
-      #chatbase-bubble-window {
+      /* Chatbox button draggable styles */
+      #chatbase-bubble-button {
         cursor: move !important;
         user-select: none !important;
       }
       
-      #chatbase-bubble-window {
-        transition: none !important;
-      }
-      
-      #chatbase-bubble-window.dragging {
+      #chatbase-bubble-button.dragging {
         transition: none !important;
       }
     </style>
@@ -44,35 +39,10 @@
         domain: "www.chatbase.co"
       }
     </script>
-    <script
-      src="https://www.chatbase.co/embed.min.js"
-      chatbotId="5yuoGvi_QBUVJTPqUY0rf"
-      domain="www.chatbase.co"
-      defer>
-    </script>
-    
-    <script>
-      // Wait for chatbox to load
-      window.addEventListener('load', function() {
-        setTimeout(function() {
-          const chatButton = document.getElementById('chatbase-bubble-button');
-          const chatWindow = document.getElementById('chatbase-bubble-window');
+...
           
-          if (!chatButton || !chatWindow) return;
-          
-          let isDragging = false;
-          let currentX;
-          let currentY;
-          let initialX;
-          let initialY;
-          let xOffset = 0;
-          let yOffset = 0;
-          
-          // Make chatbox draggable
+          // Make chatbox button draggable
           function dragStart(e) {
-            const target = e.target.closest('#chatbase-bubble-window') || e.target.closest('#chatbase-bubble-button');
-            if (!target) return;
-            
             if (e.type === "touchstart") {
               initialX = e.touches[0].clientX - xOffset;
               initialY = e.touches[0].clientY - yOffset;
@@ -82,24 +52,18 @@
             }
             
             isDragging = true;
-            target.classList.add('dragging');
+            chatButton.classList.add('dragging');
           }
           
           function dragEnd(e) {
             isDragging = false;
-            const target = e.target.closest('#chatbase-bubble-window') || e.target.closest('#chatbase-bubble-button');
-            if (target) {
-              target.classList.remove('dragging');
-            }
+            chatButton.classList.remove('dragging');
           }
           
           function drag(e) {
             if (!isDragging) return;
             
             e.preventDefault();
-            
-            const target = document.getElementById('chatbase-bubble-window') || document.getElementById('chatbase-bubble-button');
-            if (!target) return;
             
             if (e.type === "touchmove") {
               currentX = e.touches[0].clientX - initialX;
@@ -112,32 +76,24 @@
             xOffset = currentX;
             yOffset = currentY;
             
-            setTranslate(currentX, currentY, target);
+            setTranslate(currentX, currentY, chatButton);
           }
           
           function setTranslate(xPos, yPos, el) {
             el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
           }
           
-          // Add event listeners for dragging
-          chatWindow.addEventListener('mousedown', dragStart);
-          chatWindow.addEventListener('mouseup', dragEnd);
-          chatWindow.addEventListener('mousemove', drag);
-          
+          // Add event listeners for dragging button only
           chatButton.addEventListener('mousedown', dragStart);
-          chatButton.addEventListener('mouseup', dragEnd);
-          chatButton.addEventListener('mousemove', drag);
+          document.addEventListener('mouseup', dragEnd);
+          document.addEventListener('mousemove', drag);
           
           // Touch events for mobile
-          chatWindow.addEventListener('touchstart', dragStart);
-          chatWindow.addEventListener('touchend', dragEnd);
-          chatWindow.addEventListener('touchmove', drag);
-          
           chatButton.addEventListener('touchstart', dragStart);
-          chatButton.addEventListener('touchend', dragEnd);
-          chatButton.addEventListener('touchmove', drag);
+          document.addEventListener('touchend', dragEnd);
+          document.addEventListener('touchmove', drag);
           
-          // Auto position at bottom when toggled
+          // Position chat window relative to button
           const observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
               if (mutation.attributeName === 'style') {
@@ -145,11 +101,11 @@
                                 chatWindow.style.opacity !== '0' &&
                                 chatWindow.style.visibility !== 'hidden';
                 
-                if (isVisible && !isDragging) {
-                  // Reset position to bottom right when opened
-                  xOffset = 0;
-                  yOffset = 0;
-                  chatWindow.style.transform = 'translate3d(0, 0, 0)';
+                if (isVisible) {
+                  // Position chat window next to button
+                  const buttonRect = chatButton.getBoundingClientRect();
+                  chatWindow.style.bottom = (window.innerHeight - buttonRect.bottom + buttonRect.height + 10) + 'px';
+                  chatWindow.style.right = (window.innerWidth - buttonRect.right) + 'px';
                 }
               }
             });
