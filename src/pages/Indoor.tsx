@@ -2,19 +2,42 @@ import { Lightbulb, Fan, Thermometer, Flame } from "lucide-react";
 import { SensorCard } from "@/components/SensorCard";
 import { ControlCard } from "@/components/ControlCard";
 import { PageHeader } from "@/components/PageHeader";
-import { useDeviceState } from "@/hooks/useDeviceState";
 import { useFirebaseData } from "@/hooks/useFirebaseData";
+import { useDeviceControl } from "@/hooks/useDeviceControl";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const Indoor = () => {
-  const [lightOn, setLightOn] = useDeviceState("indoor-light", false);
-  const [fanOn, setFanOn] = useDeviceState("indoor-fan", false);
+  const [lightOn, setLightOn] = useState(false);
+  const [fanOn, setFanOn] = useState(false);
   const { data, loading, error } = useFirebaseData();
+  const { sendControlCommand, getAllDeviceStates } = useDeviceControl();
   const { toast } = useToast();
 
   const temperature = data.temperature;
   const gasLevel = data.gasLevel;
+
+  // Load trạng thái thiết bị từ Firebase khi khởi động
+  useEffect(() => {
+    const loadDeviceStates = async () => {
+      const states = await getAllDeviceStates();
+      setLightOn(states.light1);
+      setFanOn(states.fan);
+    };
+    loadDeviceStates();
+  }, []);
+
+  // Xử lý toggle đèn
+  const handleLightToggle = async (newState: boolean) => {
+    setLightOn(newState);
+    await sendControlCommand('light1', newState);
+  };
+
+  // Xử lý toggle quạt
+  const handleFanToggle = async (newState: boolean) => {
+    setFanOn(newState);
+    await sendControlCommand('fan', newState);
+  };
 
   useEffect(() => {
     if (error) {
@@ -40,7 +63,7 @@ const Indoor = () => {
             title="Đèn"
             icon={Lightbulb}
             isOn={lightOn}
-            onToggle={setLightOn}
+            onToggle={handleLightToggle}
             iconColor="text-yellow-400"
           />
           
@@ -48,7 +71,7 @@ const Indoor = () => {
             title="Quạt"
             icon={Fan}
             isOn={fanOn}
-            onToggle={setFanOn}
+            onToggle={handleFanToggle}
             iconColor="text-blue-400"
           />
           

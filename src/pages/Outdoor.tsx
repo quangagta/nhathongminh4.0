@@ -2,17 +2,33 @@ import { Droplets, Power } from "lucide-react";
 import { SensorCard } from "@/components/SensorCard";
 import { ControlCard } from "@/components/ControlCard";
 import { PageHeader } from "@/components/PageHeader";
-import { useDeviceState } from "@/hooks/useDeviceState";
 import { useFirebaseData } from "@/hooks/useFirebaseData";
+import { useDeviceControl } from "@/hooks/useDeviceControl";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const Outdoor = () => {
-  const [pumpOn, setPumpOn] = useDeviceState("outdoor-pump", false);
+  const [pumpOn, setPumpOn] = useState(false);
   const { data, loading, error } = useFirebaseData();
+  const { sendControlCommand, getAllDeviceStates } = useDeviceControl();
   const { toast } = useToast();
 
   const humidity = data.humidity;
+
+  // Load trạng thái thiết bị từ Firebase khi khởi động
+  useEffect(() => {
+    const loadDeviceStates = async () => {
+      const states = await getAllDeviceStates();
+      setPumpOn(states.pump);
+    };
+    loadDeviceStates();
+  }, []);
+
+  // Xử lý toggle bơm nước
+  const handlePumpToggle = async (newState: boolean) => {
+    setPumpOn(newState);
+    await sendControlCommand('pump', newState);
+  };
 
   useEffect(() => {
     if (error) {
@@ -47,7 +63,7 @@ const Outdoor = () => {
             title="Máy Bơm Nước"
             icon={Power}
             isOn={pumpOn}
-            onToggle={setPumpOn}
+            onToggle={handlePumpToggle}
             iconColor="text-secondary"
           />
         </div>
