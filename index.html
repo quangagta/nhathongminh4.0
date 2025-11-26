@@ -20,101 +20,17 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    
-    <style>
-      /* Chatbox button draggable styles */
-      #chatbase-bubble-button {
-        cursor: move !important;
-        user-select: none !important;
-      }
-      
-      #chatbase-bubble-button.dragging {
-        transition: none !important;
-      }
-    </style>
-    
     <script>
       window.embeddedChatbotConfig = {
         chatbotId: "5yuoGvi_QBUVJTPqUY0rf",
         domain: "www.chatbase.co"
       }
     </script>
-...
-          
-          // Make chatbox button draggable
-          function dragStart(e) {
-            if (e.type === "touchstart") {
-              initialX = e.touches[0].clientX - xOffset;
-              initialY = e.touches[0].clientY - yOffset;
-            } else {
-              initialX = e.clientX - xOffset;
-              initialY = e.clientY - yOffset;
-            }
-            
-            isDragging = true;
-            chatButton.classList.add('dragging');
-          }
-          
-          function dragEnd(e) {
-            isDragging = false;
-            chatButton.classList.remove('dragging');
-          }
-          
-          function drag(e) {
-            if (!isDragging) return;
-            
-            e.preventDefault();
-            
-            if (e.type === "touchmove") {
-              currentX = e.touches[0].clientX - initialX;
-              currentY = e.touches[0].clientY - initialY;
-            } else {
-              currentX = e.clientX - initialX;
-              currentY = e.clientY - initialY;
-            }
-            
-            xOffset = currentX;
-            yOffset = currentY;
-            
-            setTranslate(currentX, currentY, chatButton);
-          }
-          
-          function setTranslate(xPos, yPos, el) {
-            el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
-          }
-          
-          // Add event listeners for dragging button only
-          chatButton.addEventListener('mousedown', dragStart);
-          document.addEventListener('mouseup', dragEnd);
-          document.addEventListener('mousemove', drag);
-          
-          // Touch events for mobile
-          chatButton.addEventListener('touchstart', dragStart);
-          document.addEventListener('touchend', dragEnd);
-          document.addEventListener('touchmove', drag);
-          
-          // Position chat window relative to button
-          const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-              if (mutation.attributeName === 'style') {
-                const isVisible = chatWindow.style.display !== 'none' && 
-                                chatWindow.style.opacity !== '0' &&
-                                chatWindow.style.visibility !== 'hidden';
-                
-                if (isVisible) {
-                  // Position chat window next to button
-                  const buttonRect = chatButton.getBoundingClientRect();
-                  chatWindow.style.bottom = (window.innerHeight - buttonRect.bottom + buttonRect.height + 10) + 'px';
-                  chatWindow.style.right = (window.innerWidth - buttonRect.right) + 'px';
-                }
-              }
-            });
-          });
-          
-          observer.observe(chatWindow, { attributes: true });
-          
-        }, 2000);
-      });
+    <script
+      src="https://www.chatbase.co/embed.min.js"
+      chatbotId="5yuoGvi_QBUVJTPqUY0rf"
+      domain="www.chatbase.co"
+      defer>
     </script>
   </body>
 </html>
