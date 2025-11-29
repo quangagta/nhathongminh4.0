@@ -2,9 +2,11 @@ import { Lightbulb, Fan, Thermometer, Flame } from "lucide-react";
 import { SensorCard } from "@/components/SensorCard";
 import { ControlCard } from "@/components/ControlCard";
 import { DoorControl } from "@/components/DoorControl";
+import { DoorHistory } from "@/components/DoorHistory";
 import { PageHeader } from "@/components/PageHeader";
 import { useFirebaseData } from "@/hooks/useFirebaseData";
 import { useDeviceControl } from "@/hooks/useDeviceControl";
+import { useDoorControl } from "@/hooks/useDoorControl";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 
@@ -13,6 +15,7 @@ const Indoor = () => {
   const [fanOn, setFanOn] = useState(false);
   const { data, loading, error } = useFirebaseData();
   const { sendControlCommand, getAllDeviceStates } = useDeviceControl();
+  const { history } = useDoorControl();
   const { toast } = useToast();
 
   const temperature = data.temperature;
@@ -62,6 +65,10 @@ const Indoor = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="md:col-span-2">
             <DoorControl />
+          </div>
+          
+          <div className="md:col-span-2">
+            <DoorHistory history={history} />
           </div>
           
           <ControlCard

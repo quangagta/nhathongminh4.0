@@ -29,7 +29,7 @@ export const DoorControl = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showChangePassword, setShowChangePassword] = useState(false);
   
-  const { isUnlocked, loading, autoLockDelay, updateAutoLockDelay, verifyAndUnlock, changePassword, lockDoor } = useDoorControl();
+  const { isUnlocked, loading, history, autoLockDelay, updateAutoLockDelay, verifyAndUnlock, changePassword, lockDoor } = useDoorControl();
 
   const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
