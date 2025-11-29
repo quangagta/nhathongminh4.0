@@ -1,6 +1,7 @@
 import { Lightbulb, Fan, Thermometer, Flame } from "lucide-react";
 import { SensorCard } from "@/components/SensorCard";
 import { ControlCard } from "@/components/ControlCard";
+import { DoorControl } from "@/components/DoorControl";
 import { PageHeader } from "@/components/PageHeader";
 import { useFirebaseData } from "@/hooks/useFirebaseData";
 import { useDeviceControl } from "@/hooks/useDeviceControl";
@@ -59,6 +60,10 @@ const Indoor = () => {
         />
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="md:col-span-2">
+            <DoorControl />
+          </div>
+          
           <ControlCard
             title="Đèn"
             icon={Lightbulb}
