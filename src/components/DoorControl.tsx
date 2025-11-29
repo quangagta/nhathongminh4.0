@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Lock, LockOpen, Key } from 'lucide-react';
+import { Lock, LockOpen, Key, Clock } from 'lucide-react';
 import { useDoorControl } from '@/hooks/useDoorControl';
 import {
   Dialog,
@@ -14,6 +14,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const DoorControl = () => {
   const [password, setPassword] = useState('');
@@ -22,7 +29,7 @@ export const DoorControl = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showChangePassword, setShowChangePassword] = useState(false);
   
-  const { isUnlocked, loading, verifyAndUnlock, changePassword, lockDoor } = useDoorControl();
+  const { isUnlocked, loading, autoLockDelay, updateAutoLockDelay, verifyAndUnlock, changePassword, lockDoor } = useDoorControl();
 
   const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,6 +141,26 @@ export const DoorControl = () => {
         {!isUnlocked ? (
           <form onSubmit={handleUnlock} className="space-y-4">
             <div className="grid gap-2">
+              <Label htmlFor="autoLockDelay" className="flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Thời gian tự động khóa
+              </Label>
+              <Select
+                value={autoLockDelay.toString()}
+                onValueChange={(value) => updateAutoLockDelay(parseInt(value))}
+              >
+                <SelectTrigger id="autoLockDelay" className="bg-card">
+                  <SelectValue placeholder="Chọn thời gian" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover z-50">
+                  <SelectItem value="5">5 giây</SelectItem>
+                  <SelectItem value="10">10 giây</SelectItem>
+                  <SelectItem value="30">30 giây</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid gap-2">
               <Label htmlFor="password">Nhập mật khẩu để mở khóa</Label>
               <Input
                 id="password"
@@ -161,7 +188,7 @@ export const DoorControl = () => {
           <div className="space-y-4">
             <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
               <p className="text-green-600 text-center font-medium">
-                Cửa đã mở! Sẽ tự động khóa sau 5 giây
+                Cửa đã mở! Sẽ tự động khóa sau {autoLockDelay} giây
               </p>
             </div>
             <Button 
