@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ref, onValue, set, get } from 'firebase/database';
 import { database } from '@/config/firebase';
 import { toast } from 'sonner';
@@ -7,6 +7,7 @@ export const useDoorControl = () => {
   const [password, setPassword] = useState<string>('');
   const [isUnlocked, setIsUnlocked] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
+  const autoLockTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const doorStatusRef = ref(database, 'controls/door');
@@ -17,7 +18,13 @@ export const useDoorControl = () => {
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      // Cleanup timer khi component unmount
+      if (autoLockTimerRef.current) {
+        clearTimeout(autoLockTimerRef.current);
+      }
+    };
   }, []);
 
   const verifyAndUnlock = async (inputPassword: string) => {
@@ -29,15 +36,20 @@ export const useDoorControl = () => {
       const storedPassword = snapshot.exists() ? snapshot.val() : '1234'; // Mật khẩu mặc định
       
       if (inputPassword === storedPassword) {
+        // Xóa timer cũ nếu có
+        if (autoLockTimerRef.current) {
+          clearTimeout(autoLockTimerRef.current);
+        }
+        
         await set(ref(database, 'controls/door'), true);
-        setIsUnlocked(true);
         toast.success('Mở khóa thành công!');
         
         // Tự động khóa lại sau 5 giây
-        setTimeout(async () => {
+        autoLockTimerRef.current = setTimeout(async () => {
+          console.log('Auto-locking door...');
           await set(ref(database, 'controls/door'), false);
-          setIsUnlocked(false);
           toast.info('Đã tự động khóa lại');
+          autoLockTimerRef.current = null;
         }, 5000);
       } else {
         toast.error('Mật khẩu không đúng!');
@@ -77,8 +89,13 @@ export const useDoorControl = () => {
 
   const lockDoor = async () => {
     try {
+      // Xóa timer tự động khóa nếu đang chạy
+      if (autoLockTimerRef.current) {
+        clearTimeout(autoLockTimerRef.current);
+        autoLockTimerRef.current = null;
+      }
+      
       await set(ref(database, 'controls/door'), false);
-      setIsUnlocked(false);
       toast.success('Đã khóa cửa');
     } catch (error) {
       console.error('Error locking door:', error);
