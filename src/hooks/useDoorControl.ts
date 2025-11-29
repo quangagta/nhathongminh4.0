@@ -117,9 +117,9 @@ export const useDoorControl = () => {
     const doorStatusRef = ref(database, 'controls/door');
     
     const unsubscribe = onValue(doorStatusRef, (snapshot) => {
-      if (snapshot.exists()) {
-        setIsUnlocked(snapshot.val());
-      }
+      const status = snapshot.exists() ? snapshot.val() : false;
+      console.log('Door status from Firebase:', status);
+      setIsUnlocked(status);
     });
 
     return () => {
@@ -145,6 +145,7 @@ export const useDoorControl = () => {
           clearTimeout(autoLockTimerRef.current);
         }
         
+        console.log('Setting door to unlocked state...');
         await set(ref(database, 'controls/door'), true);
         await recordUnlock(); // Ghi lại lịch sử mở khóa
         toast.success(`Mở khóa thành công! Sẽ tự động khóa sau ${autoLockDelay}s`);
@@ -201,6 +202,7 @@ export const useDoorControl = () => {
         autoLockTimerRef.current = null;
       }
       
+      console.log('Setting door to locked state...');
       await set(ref(database, 'controls/door'), false);
       await recordLock(false); // Ghi lại lịch sử khóa thủ công
       toast.success('Đã khóa cửa');
