@@ -7,7 +7,16 @@ export const useDoorControl = () => {
   const [password, setPassword] = useState<string>('');
   const [isUnlocked, setIsUnlocked] = useState<boolean>(false);
   const [loading, setLoading] = useState(false);
+  const [autoLockDelay, setAutoLockDelay] = useState<number>(() => {
+    const saved = localStorage.getItem('doorAutoLockDelay');
+    return saved ? parseInt(saved) : 5;
+  });
   const autoLockTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const updateAutoLockDelay = (seconds: number) => {
+    setAutoLockDelay(seconds);
+    localStorage.setItem('doorAutoLockDelay', seconds.toString());
+  };
 
   useEffect(() => {
     const doorStatusRef = ref(database, 'controls/door');
@@ -42,15 +51,15 @@ export const useDoorControl = () => {
         }
         
         await set(ref(database, 'controls/door'), true);
-        toast.success('Mở khóa thành công!');
+        toast.success(`Mở khóa thành công! Sẽ tự động khóa sau ${autoLockDelay}s`);
         
-        // Tự động khóa lại sau 5 giây
+        // Tự động khóa lại sau thời gian đã chọn
         autoLockTimerRef.current = setTimeout(async () => {
           console.log('Auto-locking door...');
           await set(ref(database, 'controls/door'), false);
           toast.info('Đã tự động khóa lại');
           autoLockTimerRef.current = null;
-        }, 5000);
+        }, autoLockDelay * 1000);
       } else {
         toast.error('Mật khẩu không đúng!');
       }
@@ -106,6 +115,8 @@ export const useDoorControl = () => {
   return {
     isUnlocked,
     loading,
+    autoLockDelay,
+    updateAutoLockDelay,
     verifyAndUnlock,
     changePassword,
     lockDoor
