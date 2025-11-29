@@ -37,8 +37,10 @@ export const useDoorControl = () => {
     );
     
     const unsubscribe = onValue(historyRef, (snapshot) => {
+      console.log('History snapshot received:', snapshot.exists());
       if (snapshot.exists()) {
         const data = snapshot.val();
+        console.log('History data:', data);
         const historyArray: DoorHistoryEntry[] = Object.entries(data).map(([id, entry]: [string, any]) => ({
           id,
           unlockedAt: entry.unlockedAt,
@@ -46,10 +48,15 @@ export const useDoorControl = () => {
           duration: entry.duration,
           autoLocked: entry.autoLocked
         })).sort((a, b) => b.unlockedAt - a.unlockedAt);
+        console.log('History array:', historyArray.length, 'entries');
         setHistory(historyArray);
       } else {
+        console.log('No history data found');
         setHistory([]);
       }
+    }, (error) => {
+      console.error('Error loading history:', error);
+      toast.error('Không thể tải lịch sử');
     });
 
     return () => unsubscribe();
@@ -57,36 +64,52 @@ export const useDoorControl = () => {
 
   // Ghi lại thời gian mở khóa
   const recordUnlock = async () => {
-    const historyRef = ref(database, 'doorHistory');
-    const newEntry = push(historyRef);
-    currentSessionRef.current = newEntry.key;
-    
-    await set(newEntry, {
-      unlockedAt: Date.now(),
-      autoLocked: false
-    });
+    try {
+      console.log('Recording unlock...');
+      const historyRef = ref(database, 'doorHistory');
+      const newEntry = push(historyRef);
+      currentSessionRef.current = newEntry.key;
+      
+      await set(newEntry, {
+        unlockedAt: Date.now(),
+        autoLocked: false
+      });
+      console.log('Unlock recorded successfully:', newEntry.key);
+    } catch (error) {
+      console.error('Error recording unlock:', error);
+      toast.error('Không thể ghi lịch sử mở khóa');
+    }
   };
 
   // Ghi lại thời gian khóa lại
   const recordLock = async (autoLocked: boolean) => {
-    if (currentSessionRef.current) {
-      const entryRef = ref(database, `doorHistory/${currentSessionRef.current}`);
-      const snapshot = await get(entryRef);
-      
-      if (snapshot.exists()) {
-        const unlockedAt = snapshot.val().unlockedAt;
-        const lockedAt = Date.now();
-        const duration = Math.round((lockedAt - unlockedAt) / 1000); // duration in seconds
+    try {
+      if (currentSessionRef.current) {
+        console.log('Recording lock...', currentSessionRef.current);
+        const entryRef = ref(database, `doorHistory/${currentSessionRef.current}`);
+        const snapshot = await get(entryRef);
         
-        await set(entryRef, {
-          unlockedAt,
-          lockedAt,
-          duration,
-          autoLocked
-        });
+        if (snapshot.exists()) {
+          const unlockedAt = snapshot.val().unlockedAt;
+          const lockedAt = Date.now();
+          const duration = Math.round((lockedAt - unlockedAt) / 1000); // duration in seconds
+          
+          await set(entryRef, {
+            unlockedAt,
+            lockedAt,
+            duration,
+            autoLocked
+          });
+          console.log('Lock recorded successfully');
+        } else {
+          console.warn('Entry not found for lock recording');
+        }
+        
+        currentSessionRef.current = null;
       }
-      
-      currentSessionRef.current = null;
+    } catch (error) {
+      console.error('Error recording lock:', error);
+      toast.error('Không thể ghi lịch sử khóa');
     }
   };
 
