@@ -58,6 +58,14 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
       },
+      boxShadow: {
+        'card': '0 4px 20px -4px hsl(210 50% 50% / 0.12)',
+        'card-hover': '0 12px 32px -8px hsl(210 80% 50% / 0.2)',
+        'glow-primary': '0 0 24px hsl(210 80% 50% / 0.3)',
+        'glow-secondary': '0 0 24px hsl(160 55% 42% / 0.25)',
+        'glow-accent': '0 0 24px hsl(185 70% 45% / 0.25)',
+        'inner-light': 'inset 0 1px 0 0 hsl(0 0% 100% / 0.1)',
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
@@ -80,10 +88,20 @@ export default {
             height: "0",
           },
         },
+        "float": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-6px)" },
+        },
+        "pulse-soft": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.7" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "float": "float 3s ease-in-out infinite",
+        "pulse-soft": "pulse-soft 2s ease-in-out infinite",
       },
     },
   },

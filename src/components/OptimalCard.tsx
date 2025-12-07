@@ -36,47 +36,50 @@ export const OptimalCard = ({
   const progress = Math.min(100, Math.max(0, (currentValue / optimalMax) * 100));
   
   return (
-    <Card className="p-6 bg-card border-border hover:shadow-lg hover:shadow-primary/20 transition-all">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className={`p-3 rounded-lg ${iconColor.replace('text-', 'bg-').replace('-400', '-500/10')}`}>
-            <Icon className={`w-6 h-6 ${iconColor}`} />
+    <Card className="p-6 bg-gradient-to-br from-card to-muted/20 border-border shadow-card hover:shadow-card-hover transition-all duration-300 relative overflow-hidden group">
+      <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-primary/5 to-transparent rounded-bl-full group-hover:from-primary/10 transition-colors duration-300"></div>
+      <div className="relative">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className={`p-3 rounded-xl shadow-inner-light ${iconColor.replace('text-', 'bg-').replace('-400', '-500/15')}`}>
+              <Icon className={`w-6 h-6 ${iconColor}`} />
+            </div>
+            <h3 className="text-lg font-semibold">{title}</h3>
           </div>
-          <h3 className="text-lg font-semibold">{title}</h3>
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${status.bg} backdrop-blur-sm`}>
+            <StatusIcon className={`w-4 h-4 ${status.color}`} />
+            <span className={`text-sm font-medium ${status.color}`}>{status.label}</span>
+          </div>
         </div>
-        <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${status.bg}`}>
-          <StatusIcon className={`w-4 h-4 ${status.color}`} />
-          <span className={`text-sm font-medium ${status.color}`}>{status.label}</span>
-        </div>
-      </div>
       
-      <div className="space-y-4">
-        <div className="flex items-end justify-between">
-          <div>
-            <p className="text-sm text-muted-foreground">Giá trị hiện tại</p>
-            <p className="text-3xl font-bold">{currentValue}<span className="text-lg text-muted-foreground ml-1">{unit}</span></p>
+        <div className="space-y-4">
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Giá trị hiện tại</p>
+              <p className="text-3xl font-bold">{currentValue}<span className="text-lg text-muted-foreground ml-1">{unit}</span></p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-muted-foreground">Khoảng tối ưu</p>
+              <p className="text-lg font-semibold text-primary">{optimalMin} - {optimalMax}{unit}</p>
+            </div>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-muted-foreground">Khoảng tối ưu</p>
-            <p className="text-lg font-semibold text-primary">{optimalMin} - {optimalMax}{unit}</p>
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>0{unit}</span>
-            <span>{optimalMax * 1.5}{unit}</span>
-          </div>
-          <div className="relative">
-            <Progress value={progress} className="h-3" />
-            {/* Optimal range indicator */}
-            <div 
-              className="absolute top-0 h-3 border-2 border-green-500 rounded-sm opacity-60"
-              style={{
-                left: `${(optimalMin / (optimalMax * 1.5)) * 100}%`,
-                width: `${((optimalMax - optimalMin) / (optimalMax * 1.5)) * 100}%`
-              }}
-            />
+          
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>0{unit}</span>
+              <span>{optimalMax * 1.5}{unit}</span>
+            </div>
+            <div className="relative">
+              <Progress value={progress} className="h-3" />
+              {/* Optimal range indicator */}
+              <div 
+                className="absolute top-0 h-3 border-2 border-green-500 rounded-sm opacity-60"
+                style={{
+                  left: `${(optimalMin / (optimalMax * 1.5)) * 100}%`,
+                  width: `${((optimalMax - optimalMin) / (optimalMax * 1.5)) * 100}%`
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>
