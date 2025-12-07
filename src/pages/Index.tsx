@@ -62,9 +62,10 @@ const Index = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <Link to="/indoor">
-              <Card className="p-8 bg-card border-border hover:shadow-xl hover:shadow-primary/20 transition-all hover:scale-105 cursor-pointer group h-full">
-                <div className="flex flex-col items-center text-center">
-                  <div className="p-4 rounded-full bg-primary/10 mb-4 group-hover:bg-primary/20 transition-all">
+              <Card className="p-8 bg-gradient-to-br from-card to-muted/30 border-border shadow-card hover:shadow-card-hover hover:shadow-primary/20 transition-all duration-300 hover:scale-105 hover:-translate-y-1 cursor-pointer group h-full relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative flex flex-col items-center text-center">
+                  <div className="p-4 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 mb-4 group-hover:shadow-glow-primary transition-all duration-300 group-hover:animate-float">
                     <Home className="w-8 h-8 text-primary" />
                   </div>
                   <h3 className="text-2xl font-bold mb-2">Trong Nhà</h3>
@@ -74,9 +75,10 @@ const Index = () => {
             </Link>
 
             <Link to="/outdoor">
-              <Card className="p-8 bg-card border-border hover:shadow-xl hover:shadow-secondary/20 transition-all hover:scale-105 cursor-pointer group h-full">
-                <div className="flex flex-col items-center text-center">
-                  <div className="p-4 rounded-full bg-secondary/10 mb-4 group-hover:bg-secondary/20 transition-all">
+              <Card className="p-8 bg-gradient-to-br from-card to-muted/30 border-border shadow-card hover:shadow-card-hover hover:shadow-secondary/20 transition-all duration-300 hover:scale-105 hover:-translate-y-1 cursor-pointer group h-full relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative flex flex-col items-center text-center">
+                  <div className="p-4 rounded-full bg-gradient-to-br from-secondary/20 to-secondary/5 mb-4 group-hover:shadow-glow-secondary transition-all duration-300 group-hover:animate-float">
                     <TreePine className="w-8 h-8 text-secondary" />
                   </div>
                   <h3 className="text-2xl font-bold mb-2">Vườn Rau</h3>
@@ -86,9 +88,10 @@ const Index = () => {
             </Link>
 
             <Link to="/info">
-              <Card className="p-8 bg-card border-border hover:shadow-xl hover:shadow-accent/20 transition-all hover:scale-105 cursor-pointer group h-full">
-                <div className="flex flex-col items-center text-center">
-                  <div className="p-4 rounded-full bg-accent/10 mb-4 group-hover:bg-accent/20 transition-all">
+              <Card className="p-8 bg-gradient-to-br from-card to-muted/30 border-border shadow-card hover:shadow-card-hover hover:shadow-accent/20 transition-all duration-300 hover:scale-105 hover:-translate-y-1 cursor-pointer group h-full relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative flex flex-col items-center text-center">
+                  <div className="p-4 rounded-full bg-gradient-to-br from-accent/20 to-accent/5 mb-4 group-hover:shadow-glow-accent transition-all duration-300 group-hover:animate-float">
                     <Info className="w-8 h-8 text-accent" />
                   </div>
                   <h3 className="text-2xl font-bold mb-2">Thông Tin</h3>
