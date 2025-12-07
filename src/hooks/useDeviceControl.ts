@@ -18,8 +18,11 @@ export const useDeviceControl = () => {
   // Hàm gửi lệnh điều khiển lên Firebase
   const sendControlCommand = async (device: keyof DeviceStates, state: boolean) => {
     try {
-      const controlRef = ref(database, `controls/${device}`);
+      const path = `controls/${device}`;
+      console.log(`Gửi lệnh điều khiển: ${path} = ${state}`);
+      const controlRef = ref(database, path);
       await set(controlRef, state);
+      console.log(`Đã gửi thành công: ${path} = ${state}`);
       
       toast.success(`Đã ${state ? 'bật' : 'tắt'} ${getDeviceName(device)}`);
       return true;
