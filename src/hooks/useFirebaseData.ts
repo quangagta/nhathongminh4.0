@@ -20,6 +20,9 @@ export const useFirebaseData = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log('Firebase database:', database);
+    console.log('Connecting to Firebase...');
+    
     const tempRef = ref(database, 'nhathongminh/nhietdo');
     const gasRef = ref(database, 'nhathongminh/khiga');
 
@@ -35,6 +38,8 @@ export const useFirebaseData = () => {
     // Lắng nghe nhiệt độ
     const handleTemp = (snapshot: any) => {
       try {
+        console.log('Temp snapshot exists:', snapshot.exists());
+        console.log('Temp value:', snapshot.val());
         if (snapshot.exists()) {
           const value = snapshot.val();
           setData(prev => ({
@@ -55,6 +60,8 @@ export const useFirebaseData = () => {
     // Lắng nghe khí gas
     const handleGas = (snapshot: any) => {
       try {
+        console.log('Gas snapshot exists:', snapshot.exists());
+        console.log('Gas value:', snapshot.val());
         if (snapshot.exists()) {
           const value = snapshot.val();
           setData(prev => ({
