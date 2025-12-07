@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Indoor from "./pages/Indoor";
 import Outdoor from "./pages/Outdoor";
 import Info from "./pages/Info";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/indoor" element={<Indoor />} />
           <Route path="/outdoor" element={<Outdoor />} />
           <Route path="/info" element={<Info />} />
+          <Route path="/settings" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
