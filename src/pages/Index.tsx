@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { Home, TreePine, Info, Activity, Settings } from "lucide-react";
+import { SettingsPanel } from "@/components/SettingsPanel";
+import { Home, TreePine, Info, Activity } from "lucide-react";
 
 const Index = () => {
   return (
@@ -24,9 +25,9 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <Link to="/indoor">
-              <Card className="p-8 bg-card border-border hover:shadow-xl hover:shadow-primary/20 transition-all hover:scale-105 cursor-pointer group">
+              <Card className="p-8 bg-card border-border hover:shadow-xl hover:shadow-primary/20 transition-all hover:scale-105 cursor-pointer group h-full">
                 <div className="flex flex-col items-center text-center">
                   <div className="p-4 rounded-full bg-primary/10 mb-4 group-hover:bg-primary/20 transition-all">
                     <Home className="w-8 h-8 text-primary" />
@@ -38,7 +39,7 @@ const Index = () => {
             </Link>
 
             <Link to="/outdoor">
-              <Card className="p-8 bg-card border-border hover:shadow-xl hover:shadow-secondary/20 transition-all hover:scale-105 cursor-pointer group">
+              <Card className="p-8 bg-card border-border hover:shadow-xl hover:shadow-secondary/20 transition-all hover:scale-105 cursor-pointer group h-full">
                 <div className="flex flex-col items-center text-center">
                   <div className="p-4 rounded-full bg-secondary/10 mb-4 group-hover:bg-secondary/20 transition-all">
                     <TreePine className="w-8 h-8 text-secondary" />
@@ -50,7 +51,7 @@ const Index = () => {
             </Link>
 
             <Link to="/info">
-              <Card className="p-8 bg-card border-border hover:shadow-xl hover:shadow-accent/20 transition-all hover:scale-105 cursor-pointer group">
+              <Card className="p-8 bg-card border-border hover:shadow-xl hover:shadow-accent/20 transition-all hover:scale-105 cursor-pointer group h-full">
                 <div className="flex flex-col items-center text-center">
                   <div className="p-4 rounded-full bg-accent/10 mb-4 group-hover:bg-accent/20 transition-all">
                     <Info className="w-8 h-8 text-accent" />
@@ -60,19 +61,10 @@ const Index = () => {
                 </div>
               </Card>
             </Link>
-
-            <Link to="/settings">
-              <Card className="p-8 bg-card border-border hover:shadow-xl hover:shadow-blue-500/20 transition-all hover:scale-105 cursor-pointer group md:col-span-3">
-                <div className="flex flex-col items-center text-center">
-                  <div className="p-4 rounded-full bg-blue-500/10 mb-4 group-hover:bg-blue-500/20 transition-all">
-                    <Settings className="w-8 h-8 text-blue-400" />
-                  </div>
-                  <h3 className="text-2xl font-bold mb-2">Cài Đặt</h3>
-                  <p className="text-muted-foreground">Tùy chỉnh ngưỡng cảnh báo</p>
-                </div>
-              </Card>
-            </Link>
           </div>
+
+          {/* Settings Panel */}
+          <SettingsPanel />
         </div>
       </div>
     </div>
