@@ -2,25 +2,36 @@ import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { Home, TreePine, Info, Activity } from "lucide-react";
+import smartHomeModel from "@/assets/smart-home-model.png";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
+      {/* Hero Header with Image */}
+      <div className="relative w-full h-64 md:h-80 overflow-hidden">
+        <img 
+          src={smartHomeModel} 
+          alt="Mô hình nhà thông minh" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
+        <div className="absolute bottom-0 left-0 right-0 p-6 text-center">
+          <div className="inline-flex items-center gap-2 mb-2 px-4 py-2 rounded-full bg-primary/20 backdrop-blur-sm border border-primary/30">
+            <Activity className="w-4 h-4 text-primary animate-pulse" />
+            <span className="text-sm font-medium text-primary">Hệ thống hoạt động</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
+            Nhà Thông Minh
+          </h1>
+        </div>
+      </div>
+
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--primary)/0.1),transparent_50%)]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,hsl(var(--secondary)/0.1),transparent_50%)]"></div>
         
-        <div className="relative max-w-7xl mx-auto px-6 py-20">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-              <Activity className="w-4 h-4 text-primary animate-pulse" />
-              <span className="text-sm font-medium text-primary">Hệ thống hoạt động</span>
-            </div>
-            <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-              Nhà Thông Minh
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+        <div className="relative max-w-7xl mx-auto px-6 py-8">
+          <div className="text-center mb-8">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Điều khiển và giám sát thiết bị Arduino của bạn mọi lúc, mọi nơi
             </p>
           </div>
