@@ -4,8 +4,10 @@ import { ControlCard } from "@/components/ControlCard";
 import { DoorControl } from "@/components/DoorControl";
 import { PageHeader } from "@/components/PageHeader";
 import { GasAlertDialog } from "@/components/GasAlertDialog";
+import { TempAlertDialog } from "@/components/TempAlertDialog";
 import { useFirebaseData } from "@/hooks/useFirebaseData";
 import { useDeviceControl } from "@/hooks/useDeviceControl";
+import { useAlertSettings } from "@/hooks/useAlertSettings";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 
@@ -14,6 +16,7 @@ const Indoor = () => {
   const [fanOn, setFanOn] = useState(false);
   const { data, loading, error } = useFirebaseData();
   const { sendControlCommand, getAllDeviceStates } = useDeviceControl();
+  const { settings } = useAlertSettings();
   const { toast } = useToast();
 
   const temperature = data.temperature;
@@ -97,12 +100,23 @@ const Indoor = () => {
             unit="ppm"
             iconColor="text-red-400"
             progress={gasLevel / 100 * 100}
-            alert={gasLevel > 50}
+            alert={gasLevel > settings.gasThreshold}
           />
         </div>
         
         {/* Dialog cảnh báo khí gas */}
-        <GasAlertDialog gasLevel={gasLevel} threshold={50} />
+        <GasAlertDialog 
+          gasLevel={gasLevel} 
+          threshold={settings.gasThreshold} 
+          soundEnabled={settings.soundEnabled} 
+        />
+        
+        {/* Dialog cảnh báo nhiệt độ */}
+        <TempAlertDialog 
+          temperature={temperature} 
+          threshold={settings.tempThreshold} 
+          soundEnabled={settings.soundEnabled} 
+        />
       </div>
     </div>
   );

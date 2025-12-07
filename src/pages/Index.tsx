@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { Home, TreePine, Info, Activity } from "lucide-react";
+import { Home, TreePine, Info, Activity, Settings } from "lucide-react";
 
 const Index = () => {
   return (
@@ -57,6 +57,18 @@ const Index = () => {
                   </div>
                   <h3 className="text-2xl font-bold mb-2">Thông Tin</h3>
                   <p className="text-muted-foreground">Tổng quan hệ thống</p>
+                </div>
+              </Card>
+            </Link>
+
+            <Link to="/settings">
+              <Card className="p-8 bg-card border-border hover:shadow-xl hover:shadow-blue-500/20 transition-all hover:scale-105 cursor-pointer group md:col-span-3">
+                <div className="flex flex-col items-center text-center">
+                  <div className="p-4 rounded-full bg-blue-500/10 mb-4 group-hover:bg-blue-500/20 transition-all">
+                    <Settings className="w-8 h-8 text-blue-400" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-2">Cài Đặt</h3>
+                  <p className="text-muted-foreground">Tùy chỉnh ngưỡng cảnh báo</p>
                 </div>
               </Card>
             </Link>
