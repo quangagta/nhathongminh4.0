@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { SettingsPanel } from "@/components/SettingsPanel";
+import { SensorChart } from "@/components/SensorChart";
 import { Home, TreePine, Info, Activity } from "lucide-react";
 import { useState, useEffect } from "react";
 import smartHomeModel from "@/assets/smart-home-model.png";
@@ -58,7 +58,12 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* Sensor Chart */}
+          <div className="mb-8">
+            <SensorChart />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Link to="/indoor">
               <Card className="p-8 bg-card border-border hover:shadow-xl hover:shadow-primary/20 transition-all hover:scale-105 cursor-pointer group h-full">
                 <div className="flex flex-col items-center text-center">
@@ -95,9 +100,6 @@ const Index = () => {
               </Card>
             </Link>
           </div>
-
-          {/* Settings Panel */}
-          <SettingsPanel />
         </div>
       </div>
     </div>
