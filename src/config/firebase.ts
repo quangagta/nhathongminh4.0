@@ -1,15 +1,15 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase } from 'firebase/database';
 
-// Cấu hình Firebase - thay thế bằng config của bạn
+// Cấu hình Firebase
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
+  authDomain: "nhalinhtinh-56f89.firebaseapp.com",
+  databaseURL: "https://nhalinhtinh-56f89-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "nhalinhtinh-56f89",
+  storageBucket: "nhalinhtinh-56f89.appspot.com",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || ""
 };
 
 // Khởi tạo Firebase
