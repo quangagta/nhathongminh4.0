@@ -9,7 +9,7 @@ export interface SensorData {
   timestamp: string;
 }
 
-export const useFirebaseData = (path: string = 'sensorData') => {
+export const useFirebaseData = () => {
   const [data, setData] = useState<SensorData>({
     temperature: 0,
     gasLevel: 0,
@@ -20,27 +20,55 @@ export const useFirebaseData = (path: string = 'sensorData') => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const dataRef = ref(database, path);
+    const tempRef = ref(database, 'nhathongminh/nhietdo');
+    const gasRef = ref(database, 'nhathongminh/khiga');
 
-    const handleData = (snapshot: any) => {
+    let tempLoaded = false;
+    let gasLoaded = false;
+
+    const checkLoading = () => {
+      if (tempLoaded && gasLoaded) {
+        setLoading(false);
+      }
+    };
+
+    // Lắng nghe nhiệt độ
+    const handleTemp = (snapshot: any) => {
       try {
         if (snapshot.exists()) {
           const value = snapshot.val();
-          setData({
-            temperature: value.temperature || 0,
-            gasLevel: value.gasLevel || 0,
-            humidity: value.humidity || 0,
-            timestamp: value.timestamp || ''
-          });
+          setData(prev => ({
+            ...prev,
+            temperature: typeof value === 'number' ? value : parseFloat(value) || 0
+          }));
           setError(null);
-        } else {
-          setError('Không có dữ liệu');
         }
+        tempLoaded = true;
+        checkLoading();
       } catch (err) {
-        setError('Lỗi khi đọc dữ liệu');
-        console.error('Firebase error:', err);
-      } finally {
-        setLoading(false);
+        console.error('Firebase temp error:', err);
+        tempLoaded = true;
+        checkLoading();
+      }
+    };
+
+    // Lắng nghe khí gas
+    const handleGas = (snapshot: any) => {
+      try {
+        if (snapshot.exists()) {
+          const value = snapshot.val();
+          setData(prev => ({
+            ...prev,
+            gasLevel: typeof value === 'number' ? value : parseFloat(value) || 0
+          }));
+          setError(null);
+        }
+        gasLoaded = true;
+        checkLoading();
+      } catch (err) {
+        console.error('Firebase gas error:', err);
+        gasLoaded = true;
+        checkLoading();
       }
     };
 
@@ -50,14 +78,14 @@ export const useFirebaseData = (path: string = 'sensorData') => {
       setLoading(false);
     };
 
-    // Lắng nghe thay đổi dữ liệu thời gian thực
-    onValue(dataRef, handleData, handleError);
+    onValue(tempRef, handleTemp, handleError);
+    onValue(gasRef, handleGas, handleError);
 
-    // Cleanup khi component unmount
     return () => {
-      off(dataRef, 'value', handleData);
+      off(tempRef, 'value', handleTemp);
+      off(gasRef, 'value', handleGas);
     };
-  }, [path]);
+  }, []);
 
   return { data, loading, error };
 };
