@@ -58,12 +58,7 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Sensor Chart */}
-          <div className="mb-8">
-            <SensorChart />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <Link to="/indoor">
               <Card className="p-8 bg-card border-border hover:shadow-xl hover:shadow-primary/20 transition-all hover:scale-105 cursor-pointer group h-full">
                 <div className="flex flex-col items-center text-center">
@@ -99,6 +94,11 @@ const Index = () => {
                 </div>
               </Card>
             </Link>
+          </div>
+
+          {/* Sensor Chart */}
+          <div>
+            <SensorChart />
           </div>
         </div>
       </div>
