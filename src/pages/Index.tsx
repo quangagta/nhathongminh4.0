@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { SensorChart } from "@/components/SensorChart";
 import { EcosystemOverview } from "@/components/EcosystemOverview";
+import { SensorComparison } from "@/components/SensorComparison";
 import { Home, TreePine, Info, Activity, Leaf } from "lucide-react";
 import { useState, useEffect } from "react";
 import smartHomeModel from "@/assets/smart-home-model.png";
@@ -104,6 +105,11 @@ const Index = () => {
               <h2 className="text-2xl font-bold">Chỉ Số Tối Ưu Hệ Sinh Thái</h2>
             </div>
             <EcosystemOverview />
+          </div>
+
+          {/* Sensor Comparison */}
+          <div className="mb-8">
+            <SensorComparison />
           </div>
 
           {/* Sensor Chart */}
