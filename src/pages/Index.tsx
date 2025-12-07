@@ -2,20 +2,42 @@ import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { Home, TreePine, Info, Activity } from "lucide-react";
+import { useState, useEffect } from "react";
 import smartHomeModel from "@/assets/smart-home-model.png";
 
 const Index = () => {
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Header with Image */}
+      {/* Hero Header with Parallax Image */}
       <div className="relative w-full h-64 md:h-80 overflow-hidden">
         <img 
           src={smartHomeModel} 
           alt="Mô hình nhà thông minh" 
-          className="w-full h-full object-cover"
+          className="w-full h-[120%] object-cover absolute top-0 left-0"
+          style={{ 
+            transform: `translateY(${scrollY * 0.4}px) scale(${1 + scrollY * 0.0005})`,
+            transition: 'transform 0.1s ease-out'
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
-        <div className="absolute bottom-0 left-0 right-0 p-6 text-center">
+        <div 
+          className="absolute bottom-0 left-0 right-0 p-6 text-center"
+          style={{ 
+            transform: `translateY(${scrollY * 0.2}px)`,
+            opacity: Math.max(0, 1 - scrollY * 0.003)
+          }}
+        >
           <div className="inline-flex items-center gap-2 mb-2 px-4 py-2 rounded-full bg-primary/20 backdrop-blur-sm border border-primary/30">
             <Activity className="w-4 h-4 text-primary animate-pulse" />
             <span className="text-sm font-medium text-primary">Hệ thống hoạt động</span>
