@@ -3,6 +3,7 @@ import { SensorCard } from "@/components/SensorCard";
 import { ControlCard } from "@/components/ControlCard";
 import { DoorControl } from "@/components/DoorControl";
 import { PageHeader } from "@/components/PageHeader";
+import { GasAlertDialog } from "@/components/GasAlertDialog";
 import { useFirebaseData } from "@/hooks/useFirebaseData";
 import { useDeviceControl } from "@/hooks/useDeviceControl";
 import { useToast } from "@/hooks/use-toast";
@@ -99,6 +100,9 @@ const Indoor = () => {
             alert={gasLevel > 50}
           />
         </div>
+        
+        {/* Dialog cảnh báo khí gas */}
+        <GasAlertDialog gasLevel={gasLevel} threshold={50} />
       </div>
     </div>
   );
