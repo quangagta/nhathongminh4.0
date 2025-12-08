@@ -3,6 +3,7 @@ import { SensorCard } from "@/components/SensorCard";
 import { ControlCard } from "@/components/ControlCard";
 import { PageHeader } from "@/components/PageHeader";
 import { IrrigationAnalysis } from "@/components/IrrigationAnalysis";
+import { SoilMoistureHistory } from "@/components/SoilMoistureHistory";
 import { useFirebaseData } from "@/hooks/useFirebaseData";
 import { useDeviceControl } from "@/hooks/useDeviceControl";
 import { useSensorHistory } from "@/hooks/useSensorHistory";
@@ -43,6 +44,17 @@ const Outdoor = () => {
     }
   };
 
+  // Handle water now from alerts
+  const handleWaterNow = () => {
+    if (!pumpOn) {
+      handlePumpToggle(true);
+      toast({
+        title: "Đã bật máy bơm",
+        description: "Máy bơm đang tưới cây. Nhớ tắt khi đủ nước!",
+      });
+    }
+  };
+
   useEffect(() => {
     if (error) {
       toast({
@@ -56,7 +68,8 @@ const Outdoor = () => {
   // Transform history for irrigation analysis
   const humidityHistory = history.map(h => ({
     time: h.time,
-    humidity: h.humidity
+    humidity: h.humidity,
+    temperature: h.temperature
   }));
 
   return (
@@ -64,7 +77,7 @@ const Outdoor = () => {
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Vườn Rau"
-          description="Giám sát và điều khiển vườn rau thông minh"
+          description="Giám sát và điều khiển vườn rau thông minh với AI"
           gradient="from-secondary to-green-400"
         />
         
@@ -88,11 +101,21 @@ const Outdoor = () => {
         </div>
 
         {/* AI Irrigation Analysis */}
-        <IrrigationAnalysis
-          humidity={humidity}
-          temperature={data.temperature}
+        <div className="mb-6">
+          <IrrigationAnalysis
+            humidity={humidity}
+            temperature={data.temperature}
+            history={humidityHistory}
+            onAutoWater={handleAutoWater}
+          />
+        </div>
+
+        {/* Soil Moisture History & Smart Alerts */}
+        <SoilMoistureHistory
+          currentHumidity={humidity}
+          currentTemperature={data.temperature}
           history={humidityHistory}
-          onAutoWater={handleAutoWater}
+          onWaterNow={handleWaterNow}
         />
       </div>
     </div>
