@@ -1,0 +1,4 @@
+project_id = "rydabwnjoaadfjvrxhdy"
+
+[functions.analyze-fire-risk]
+verify_jwt = false

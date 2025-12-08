@@ -3,12 +3,17 @@ import { Card } from "@/components/ui/card";
 import { SensorChart } from "@/components/SensorChart";
 import { EcosystemOverview } from "@/components/EcosystemOverview";
 import { SensorComparison } from "@/components/SensorComparison";
-import { Home, TreePine, Info, Activity, Leaf } from "lucide-react";
+import { FireRiskAnalysis } from "@/components/FireRiskAnalysis";
+import { Home, TreePine, Info, Activity, Leaf, Brain } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useFirebaseData } from "@/hooks/useFirebaseData";
+import { useSensorHistory } from "@/hooks/useSensorHistory";
 import smartHomeModel from "@/assets/smart-home-header.png";
 
 const Index = () => {
   const [scrollY, setScrollY] = useState(0);
+  const { data } = useFirebaseData();
+  const { history } = useSensorHistory();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -70,6 +75,20 @@ const Index = () => {
               <h2 className="text-2xl font-bold">Chỉ Số Tối Ưu Hệ Sinh Thái</h2>
             </div>
             <EcosystemOverview />
+          </div>
+
+          {/* AI Fire Risk Analysis */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <Brain className="w-6 h-6 text-primary" />
+              <h2 className="text-2xl font-bold">AI Phân Tích Nguy Cơ Cháy</h2>
+            </div>
+            <FireRiskAnalysis 
+              temperature={data.temperature}
+              gasLevel={data.gasLevel}
+              humidity={data.humidity}
+              history={history}
+            />
           </div>
 
           {/* Sensor Comparison */}
