@@ -24,22 +24,68 @@ interface FireRiskAnalysisProps {
 }
 
 export const FireRiskAnalysis = ({ temperature, gasLevel, humidity, history = [] }: FireRiskAnalysisProps) => {
-  const [result, setResult] = useState<FireRiskResult | null>(null);
+  const [result, setResult] = useState<FireRiskResult | null>(() => {
+    // Load cached result from localStorage
+    const cached = localStorage.getItem('fireRiskResult');
+    return cached ? JSON.parse(cached) : null;
+  });
   const [loading, setLoading] = useState(false);
-  const [lastAnalyzed, setLastAnalyzed] = useState<Date | null>(null);
+  const [lastAnalyzed, setLastAnalyzed] = useState<Date | null>(() => {
+    const cached = localStorage.getItem('fireRiskLastAnalyzed');
+    return cached ? new Date(cached) : null;
+  });
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRateLimited, setIsRateLimited] = useState(false);
   const { toast } = useToast();
 
-  const analyzeRisk = async () => {
+  const analyzeRisk = async (retry = 0): Promise<void> => {
     setLoading(true);
+    setIsRateLimited(false);
+    
     try {
       const { data, error } = await supabase.functions.invoke("analyze-fire-risk", {
         body: { temperature, gasLevel, humidity, history }
       });
 
-      if (error) throw error;
+      if (error) {
+        // Check if rate limited
+        if (error.message?.includes('429') || error.message?.includes('rate limit')) {
+          setIsRateLimited(true);
+          
+          // Retry with exponential backoff (max 3 retries)
+          if (retry < 3) {
+            const delay = Math.pow(2, retry) * 2000; // 2s, 4s, 8s
+            setRetryCount(retry + 1);
+            toast({
+              title: "Đang thử lại...",
+              description: `Rate limit. Thử lại sau ${delay / 1000}s (${retry + 1}/3)`,
+            });
+            
+            setTimeout(() => analyzeRisk(retry + 1), delay);
+            return;
+          }
+          
+          // Use fallback analysis after max retries
+          const fallbackResult = generateFallbackAnalysis(temperature, gasLevel, humidity);
+          setResult(fallbackResult);
+          localStorage.setItem('fireRiskResult', JSON.stringify(fallbackResult));
+          setLastAnalyzed(new Date());
+          localStorage.setItem('fireRiskLastAnalyzed', new Date().toISOString());
+          
+          toast({
+            title: "Sử dụng phân tích offline",
+            description: "API bận, đang dùng phân tích cục bộ.",
+          });
+          return;
+        }
+        throw error;
+      }
 
       setResult(data);
+      localStorage.setItem('fireRiskResult', JSON.stringify(data));
       setLastAnalyzed(new Date());
+      localStorage.setItem('fireRiskLastAnalyzed', new Date().toISOString());
+      setRetryCount(0);
       
       if (data.riskLevel === "danger" || data.riskLevel === "critical") {
         toast({
@@ -50,9 +96,16 @@ export const FireRiskAnalysis = ({ temperature, gasLevel, humidity, history = []
       }
     } catch (err) {
       console.error("Error analyzing fire risk:", err);
+      
+      // If we have cached result, keep showing it
+      if (!result) {
+        const fallbackResult = generateFallbackAnalysis(temperature, gasLevel, humidity);
+        setResult(fallbackResult);
+      }
+      
       toast({
         title: "Lỗi phân tích",
-        description: "Không thể phân tích nguy cơ cháy. Vui lòng thử lại.",
+        description: "Đang sử dụng phân tích offline.",
         variant: "destructive"
       });
     } finally {
@@ -60,11 +113,72 @@ export const FireRiskAnalysis = ({ temperature, gasLevel, humidity, history = []
     }
   };
 
-  // Auto-analyze when data changes significantly
+  // Fallback analysis when API is unavailable
+  const generateFallbackAnalysis = (temp: number, gas: number, hum: number): FireRiskResult => {
+    let riskScore = 0;
+    const factors: string[] = [];
+
+    // Temperature analysis
+    if (temp > 45) {
+      riskScore += 40;
+      factors.push("Nhiệt độ rất cao");
+    } else if (temp > 35) {
+      riskScore += 20;
+      factors.push("Nhiệt độ cao");
+    }
+
+    // Gas analysis
+    if (gas > 60) {
+      riskScore += 50;
+      factors.push("Khí gas nguy hiểm");
+    } else if (gas > 30) {
+      riskScore += 25;
+      factors.push("Khí gas cao");
+    }
+
+    // Humidity analysis
+    if (hum < 30) {
+      riskScore += 10;
+      factors.push("Độ ẩm thấp");
+    }
+
+    riskScore = Math.min(100, riskScore);
+    
+    // Determine risk level based on score
+    const riskLevel: "safe" | "warning" | "danger" | "critical" = 
+      riskScore >= 70 ? "critical" :
+      riskScore >= 50 ? "danger" :
+      riskScore >= 20 ? "warning" : "safe";
+
+    // Humidity analysis
+    if (hum < 30) {
+      riskScore += 10;
+      factors.push("Độ ẩm thấp");
+    }
+
+    riskScore = Math.min(100, riskScore);
+
+    return {
+      riskLevel,
+      riskScore,
+      smokeType: gas > 60 ? "real_smoke" : gas > 30 ? "cooking" : "none",
+      analysis: "Phân tích offline dựa trên ngưỡng cảm biến. Kết nối AI để phân tích chi tiết hơn.",
+      recommendation: riskLevel === "critical" 
+        ? "Kiểm tra ngay lập tức! Nguy cơ cháy cao."
+        : riskLevel === "danger"
+        ? "Cần kiểm tra các nguồn nhiệt và khí gas."
+        : riskLevel === "warning"
+        ? "Theo dõi chặt chẽ các chỉ số."
+        : "Tiếp tục giám sát bình thường.",
+      factors
+    };
+  };
+
+  // Auto-analyze when data changes significantly (increased cooldown to 2 minutes)
   useEffect(() => {
     const shouldAutoAnalyze = 
       !lastAnalyzed || 
-      (new Date().getTime() - lastAnalyzed.getTime()) > 60000; // 1 minute
+      (new Date().getTime() - lastAnalyzed.getTime()) > 120000; // 2 minutes
 
     if (shouldAutoAnalyze && (temperature > 0 || gasLevel > 0)) {
       analyzeRisk();
@@ -127,7 +241,7 @@ export const FireRiskAnalysis = ({ temperature, gasLevel, humidity, history = []
           </div>
         </div>
         <Button 
-          onClick={analyzeRisk} 
+          onClick={() => analyzeRisk()} 
           disabled={loading}
           variant="outline"
           size="sm"
