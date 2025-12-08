@@ -2,14 +2,17 @@ import { Droplets, Power } from "lucide-react";
 import { SensorCard } from "@/components/SensorCard";
 import { ControlCard } from "@/components/ControlCard";
 import { PageHeader } from "@/components/PageHeader";
+import { IrrigationAnalysis } from "@/components/IrrigationAnalysis";
 import { useFirebaseData } from "@/hooks/useFirebaseData";
 import { useDeviceControl } from "@/hooks/useDeviceControl";
+import { useSensorHistory } from "@/hooks/useSensorHistory";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 
 const Outdoor = () => {
   const [pumpOn, setPumpOn] = useState(false);
   const { data, loading, error } = useFirebaseData();
+  const { history } = useSensorHistory();
   const { sendControlCommand, getAllDeviceStates } = useDeviceControl();
   const { toast } = useToast();
 
@@ -30,6 +33,16 @@ const Outdoor = () => {
     await sendControlCommand('pump', newState);
   };
 
+  // Auto water callback from AI
+  const handleAutoWater = (shouldWater: boolean) => {
+    if (shouldWater && !pumpOn) {
+      toast({
+        title: "AI Đề xuất tưới",
+        description: "Bật máy bơm để tưới cây theo đề xuất AI?",
+      });
+    }
+  };
+
   useEffect(() => {
     if (error) {
       toast({
@@ -40,16 +53,22 @@ const Outdoor = () => {
     }
   }, [error, toast]);
 
+  // Transform history for irrigation analysis
+  const humidityHistory = history.map(h => ({
+    time: h.time,
+    humidity: h.humidity
+  }));
+
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Vườn Rau"
-          description="Giám sát và điều khiển vườn rau"
+          description="Giám sát và điều khiển vườn rau thông minh"
           gradient="from-secondary to-green-400"
         />
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <SensorCard
             title="Độ Ẩm Đất"
             icon={Droplets}
@@ -67,6 +86,14 @@ const Outdoor = () => {
             iconColor="text-secondary"
           />
         </div>
+
+        {/* AI Irrigation Analysis */}
+        <IrrigationAnalysis
+          humidity={humidity}
+          temperature={data.temperature}
+          history={humidityHistory}
+          onAutoWater={handleAutoWater}
+        />
       </div>
     </div>
   );
