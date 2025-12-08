@@ -5,7 +5,7 @@ import { EcosystemOverview } from "@/components/EcosystemOverview";
 import { SensorComparison } from "@/components/SensorComparison";
 import { Home, TreePine, Info, Activity, Leaf } from "lucide-react";
 import { useState, useEffect } from "react";
-import smartHomeModel from "@/assets/smart-home-model.png";
+import smartHomeModel from "@/assets/smart-home-header.png";
 
 const Index = () => {
   const [scrollY, setScrollY] = useState(0);
