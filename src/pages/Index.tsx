@@ -4,7 +4,8 @@ import { SensorChart } from "@/components/SensorChart";
 import { EcosystemOverview } from "@/components/EcosystemOverview";
 import { SensorComparison } from "@/components/SensorComparison";
 import { FireRiskAnalysis } from "@/components/FireRiskAnalysis";
-import { Home, TreePine, Info, Activity, Leaf, Brain } from "lucide-react";
+import { IrrigationAnalysis } from "@/components/IrrigationAnalysis";
+import { Home, TreePine, Info, Activity, Leaf, Brain, Droplets } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useFirebaseData } from "@/hooks/useFirebaseData";
 import { useSensorHistory } from "@/hooks/useSensorHistory";
@@ -23,6 +24,13 @@ const Index = () => {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Transform history for irrigation analysis
+  const humidityHistory = history.map(h => ({
+    time: h.time,
+    humidity: h.humidity,
+    temperature: h.temperature
+  }));
 
   return (
     <div className="min-h-screen bg-background">
@@ -77,17 +85,33 @@ const Index = () => {
             <EcosystemOverview />
           </div>
 
-          {/* AI Fire Risk Analysis */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-4">
-              <Brain className="w-6 h-6 text-primary" />
-              <h2 className="text-2xl font-bold">AI Phân Tích Nguy Cơ Cháy</h2>
+          {/* AI Analysis Section - 2 columns on larger screens */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* AI Fire Risk Analysis */}
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <Brain className="w-6 h-6 text-primary" />
+                <h2 className="text-xl font-bold">AI Phân Tích Nguy Cơ Cháy</h2>
+              </div>
+              <FireRiskAnalysis 
+                temperature={data.temperature}
+                gasLevel={data.gasLevel}
+                history={history.map(h => ({ temperature: h.temperature, gasLevel: h.gasLevel }))}
+              />
             </div>
-            <FireRiskAnalysis 
-              temperature={data.temperature}
-              gasLevel={data.gasLevel}
-              history={history.map(h => ({ temperature: h.temperature, gasLevel: h.gasLevel }))}
-            />
+
+            {/* AI Soil Moisture Analysis */}
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <Droplets className="w-6 h-6 text-green-500" />
+                <h2 className="text-xl font-bold">AI Phân Tích Độ Ẩm Đất</h2>
+              </div>
+              <IrrigationAnalysis
+                humidity={data.humidity}
+                temperature={data.temperature}
+                history={humidityHistory}
+              />
+            </div>
           </div>
 
           {/* Sensor Comparison */}
