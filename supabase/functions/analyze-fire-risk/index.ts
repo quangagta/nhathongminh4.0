@@ -12,9 +12,9 @@ serve(async (req) => {
   }
 
   try {
-    const { temperature, gasLevel, humidity, history } = await req.json();
+    const { temperature, gasLevel, history } = await req.json();
     
-    console.log('Analyzing fire risk with data:', { temperature, gasLevel, humidity, historyLength: history?.length || 0 });
+    console.log('Analyzing fire risk with data:', { temperature, gasLevel, historyLength: history?.length || 0 });
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -22,7 +22,7 @@ serve(async (req) => {
     }
 
     const systemPrompt = `Bạn là hệ thống AI phân tích nguy cơ cháy thông minh cho nhà thông minh IoT. 
-Nhiệm vụ của bạn là phân tích dữ liệu từ các cảm biến (nhiệt độ, khí gas, độ ẩm) để:
+Nhiệm vụ của bạn là phân tích dữ liệu từ các cảm biến (nhiệt độ, khí gas) để:
 
 1. Phân loại khói thật vs khói giả (nấu ăn, hơi nước...)
 2. Nhận diện mẫu bất thường dựa trên lịch sử
@@ -32,7 +32,6 @@ Nhiệm vụ của bạn là phân tích dữ liệu từ các cảm biến (nhi
 Quy tắc phân tích:
 - Nhiệt độ bình thường: 20-35°C, cảnh báo: 35-45°C, nguy hiểm: >45°C
 - Khí gas an toàn: 0-30 ppm, cảnh báo: 30-60 ppm, nguy hiểm: >60 ppm
-- Độ ẩm tối ưu: 50-70%, khô (dễ cháy): <30%
 
 Trả về JSON với format:
 {
@@ -47,7 +46,6 @@ Trả về JSON với format:
     const userPrompt = `Phân tích dữ liệu cảm biến hiện tại:
 - Nhiệt độ: ${temperature}°C
 - Khí gas: ${gasLevel} ppm
-- Độ ẩm đất: ${humidity}%
 
 ${history && history.length > 0 ? `Lịch sử 5 phút gần nhất:
 ${history.map((h: any, i: number) => `${i + 1}. Nhiệt độ: ${h.temperature}°C, Gas: ${h.gasLevel}ppm`).join('\n')}` : 'Chưa có dữ liệu lịch sử.'}
@@ -109,7 +107,7 @@ Hãy phân tích và đưa ra đánh giá nguy cơ cháy.`;
       // Fallback response based on simple rules
       result = {
         riskLevel: gasLevel > 60 || temperature > 45 ? "danger" : gasLevel > 30 || temperature > 35 ? "warning" : "safe",
-        riskScore: Math.min(100, (gasLevel / 100 * 50) + (temperature / 50 * 30) + (humidity < 30 ? 20 : 0)),
+        riskScore: Math.min(100, (gasLevel / 100 * 60) + (temperature / 50 * 40)),
         smokeType: gasLevel > 60 ? "real_smoke" : gasLevel > 30 ? "cooking" : "none",
         analysis: "Phân tích tự động dựa trên ngưỡng cảm biến.",
         recommendation: gasLevel > 60 ? "Kiểm tra ngay lập tức!" : "Tiếp tục giám sát.",
