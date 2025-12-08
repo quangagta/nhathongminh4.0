@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Droplets, Sun, Clock, Zap, RefreshCw, Loader2, Lightbulb, Timer, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Droplets, Sun, Clock, Zap, RefreshCw, Loader2, Lightbulb, Timer, AlertTriangle, CheckCircle, Wifi, WifiOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -29,27 +28,164 @@ interface IrrigationAnalysisProps {
   onAutoWater?: (shouldWater: boolean) => void;
 }
 
+const CACHE_KEY = 'irrigation_analysis_cache';
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const MAX_RETRIES = 3;
+
+// Generate fallback analysis when API is unavailable
+const generateFallbackAnalysis = (humidity: number, temperature: number): IrrigationResult => {
+  const currentHour = new Date().getHours();
+  
+  let soilStatus: IrrigationResult['soilStatus'];
+  let needsWatering = false;
+  let urgencyLevel: IrrigationResult['urgencyLevel'] = 'none';
+  let waterAmount = 0;
+  let durationMinutes = 0;
+  
+  if (humidity < 30) {
+    soilStatus = 'very_dry';
+    needsWatering = true;
+    urgencyLevel = 'immediate';
+    waterAmount = 500;
+    durationMinutes = 10;
+  } else if (humidity < 45) {
+    soilStatus = 'dry';
+    needsWatering = true;
+    urgencyLevel = 'soon';
+    waterAmount = 300;
+    durationMinutes = 5;
+  } else if (humidity < 60) {
+    soilStatus = 'optimal';
+    urgencyLevel = 'none';
+  } else if (humidity < 75) {
+    soilStatus = 'moist';
+    urgencyLevel = 'reduce';
+  } else {
+    soilStatus = 'wet';
+    urgencyLevel = 'reduce';
+  }
+
+  const optimalTime = currentHour >= 5 && currentHour < 11 
+    ? "Ngay bây giờ (buổi sáng)" 
+    : currentHour >= 16 && currentHour < 18 
+    ? "Ngay bây giờ (chiều mát)"
+    : "9:00 - 11:00 sáng";
+
+  return {
+    soilStatus,
+    needsWatering,
+    urgencyLevel,
+    waterAmount,
+    durationMinutes,
+    optimalTime,
+    solarOptimized: currentHour >= 9 && currentHour <= 16,
+    analysis: `[Offline] Độ ẩm đất ${humidity}%, nhiệt độ ${temperature}°C. ${
+      humidity < 45 ? 'Đất đang khô, cần tưới nước.' : 
+      humidity > 75 ? 'Đất quá ẩm, không nên tưới thêm.' : 
+      'Độ ẩm ở mức phù hợp cho cây trồng.'
+    }`,
+    recommendation: needsWatering 
+      ? `Nên tưới ${waterAmount}ml nước trong ${durationMinutes} phút.`
+      : 'Chưa cần tưới, tiếp tục theo dõi.',
+    nextWateringPrediction: humidity < 45 
+      ? 'Cần tưới trong vòng 1-2 giờ' 
+      : humidity < 60 
+      ? 'Có thể cần tưới trong 4-6 giờ'
+      : 'Dự kiến cần tưới vào ngày mai',
+    energySavingTip: 'Tưới vào buổi sáng 9h-11h khi pin mặt trời đầy năng lượng và nhiệt độ chưa quá cao.'
+  };
+};
+
+// Load cached result
+const loadCachedResult = (): { result: IrrigationResult; timestamp: number } | null => {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+  } catch (e) {
+    console.error('Error loading cached irrigation result:', e);
+  }
+  return null;
+};
+
+// Save result to cache
+const saveCachedResult = (result: IrrigationResult) => {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      result,
+      timestamp: Date.now()
+    }));
+  } catch (e) {
+    console.error('Error saving irrigation result to cache:', e);
+  }
+};
+
 export const IrrigationAnalysis = ({ humidity, temperature, history, onAutoWater }: IrrigationAnalysisProps) => {
   const [result, setResult] = useState<IrrigationResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [lastAnalyzed, setLastAnalyzed] = useState<Date | null>(null);
+  const [isOnline, setIsOnline] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
 
-  const analyzeIrrigation = async () => {
+  // Load cached result on mount
+  useEffect(() => {
+    const cached = loadCachedResult();
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      setResult(cached.result);
+      setLastAnalyzed(new Date(cached.timestamp));
+    }
+  }, []);
+
+  const analyzeIrrigation = useCallback(async (retry = 0) => {
     setLoading(true);
+    setRetryCount(retry);
+    
     try {
       const { data, error } = await supabase.functions.invoke('analyze-irrigation', {
         body: { humidity, temperature, history }
       });
 
-      if (error) throw error;
+      if (error) {
+        // Check for rate limit or payment errors
+        if (error.message?.includes('429') || error.message?.includes('Rate limit')) {
+          if (retry < MAX_RETRIES) {
+            const delay = Math.pow(2, retry) * 1000;
+            console.log(`Rate limited, retrying in ${delay}ms (attempt ${retry + 1}/${MAX_RETRIES})`);
+            await new Promise(r => setTimeout(r, delay));
+            return analyzeIrrigation(retry + 1);
+          }
+          setIsOnline(false);
+          const fallback = generateFallbackAnalysis(humidity, temperature);
+          setResult(fallback);
+          toast.info('Đang sử dụng phân tích offline do giới hạn API');
+          return;
+        }
+        throw error;
+      }
       
       if (data.error) {
+        if (data.error.includes('Rate limit') || data.error.includes('429')) {
+          if (retry < MAX_RETRIES) {
+            const delay = Math.pow(2, retry) * 1000;
+            await new Promise(r => setTimeout(r, delay));
+            return analyzeIrrigation(retry + 1);
+          }
+          setIsOnline(false);
+          const fallback = generateFallbackAnalysis(humidity, temperature);
+          setResult(fallback);
+          saveCachedResult(fallback);
+          toast.info('Đang sử dụng phân tích offline');
+          return;
+        }
         toast.error(data.error);
         return;
       }
 
+      setIsOnline(true);
       setResult(data);
       setLastAnalyzed(new Date());
+      saveCachedResult(data);
 
       // Notify if urgent watering needed
       if (data.urgencyLevel === 'immediate') {
@@ -60,21 +196,33 @@ export const IrrigationAnalysis = ({ humidity, temperature, history, onAutoWater
       }
     } catch (error) {
       console.error('Error analyzing irrigation:', error);
-      toast.error('Không thể phân tích tưới cây');
+      setIsOnline(false);
+      
+      // Use cached or fallback
+      const cached = loadCachedResult();
+      if (cached) {
+        setResult(cached.result);
+        toast.info('Đang sử dụng phân tích đã lưu');
+      } else {
+        const fallback = generateFallbackAnalysis(humidity, temperature);
+        setResult(fallback);
+        toast.info('Đang sử dụng phân tích offline');
+      }
     } finally {
       setLoading(false);
+      setRetryCount(0);
     }
-  };
+  }, [humidity, temperature, history, onAutoWater]);
 
   // Auto-analyze when humidity changes significantly
   useEffect(() => {
     const shouldAnalyze = !lastAnalyzed || 
-      (Date.now() - lastAnalyzed.getTime() > 60000); // Re-analyze every minute
+      (Date.now() - lastAnalyzed.getTime() > 120000); // Re-analyze every 2 minutes
     
     if (shouldAnalyze && humidity > 0) {
       analyzeIrrigation();
     }
-  }, [humidity]);
+  }, [humidity, analyzeIrrigation]);
 
   const getSoilStatusColor = (status: string) => {
     switch (status) {
@@ -128,29 +276,59 @@ export const IrrigationAnalysis = ({ humidity, temperature, history, onAutoWater
             </div>
             AI Tưới Cây Thông Minh
           </CardTitle>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={analyzeIrrigation}
-            disabled={loading}
-            className="border-green-500/30 hover:bg-green-500/10"
-          >
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="h-4 w-4" />
-            )}
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* Online/Offline Status Indicator */}
+            <div className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs ${
+              isOnline 
+                ? 'bg-green-500/20 text-green-400' 
+                : 'bg-yellow-500/20 text-yellow-400'
+            }`}>
+              {isOnline ? (
+                <>
+                  <Wifi className="h-3 w-3" />
+                  <span>AI Online</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="h-3 w-3" />
+                  <span>Offline</span>
+                </>
+              )}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => analyzeIrrigation()}
+              disabled={loading}
+              className="border-green-500/30 hover:bg-green-500/10"
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {loading && !result ? (
-          <div className="flex items-center justify-center py-8">
+          <div className="flex flex-col items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin text-green-400" />
-            <span className="ml-2 text-muted-foreground">Đang phân tích...</span>
+            <span className="ml-2 text-muted-foreground mt-2">
+              {retryCount > 0 ? `Đang thử lại... (${retryCount}/${MAX_RETRIES})` : 'Đang phân tích...'}
+            </span>
           </div>
         ) : result ? (
           <>
+            {/* Offline Warning */}
+            {!isOnline && (
+              <div className="p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30 flex items-center gap-2 text-sm text-yellow-400">
+                <WifiOff className="h-4 w-4" />
+                <span>Đang dùng phân tích offline - Kết quả có thể không chính xác hoàn toàn</span>
+              </div>
+            )}
+
             {/* Status Overview */}
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 rounded-lg bg-background/50 border border-border/50">
@@ -215,7 +393,7 @@ export const IrrigationAnalysis = ({ humidity, temperature, history, onAutoWater
             <div className="p-3 rounded-lg bg-background/50 border border-border/50">
               <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
                 <Zap className="h-4 w-4 text-yellow-400" />
-                Phân tích AI
+                Phân tích {isOnline ? 'AI' : 'Offline'}
               </h4>
               <p className="text-sm text-muted-foreground">{result.analysis}</p>
             </div>
@@ -248,7 +426,7 @@ export const IrrigationAnalysis = ({ humidity, temperature, history, onAutoWater
             {/* Last Analyzed */}
             {lastAnalyzed && (
               <div className="text-xs text-muted-foreground text-center pt-2 border-t border-border/50">
-                Cập nhật: {lastAnalyzed.toLocaleTimeString('vi-VN')}
+                Cập nhật: {lastAnalyzed.toLocaleTimeString('vi-VN')} {!isOnline && '(Offline)'}
               </div>
             )}
           </>
