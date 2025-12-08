@@ -2,3 +2,6 @@ project_id = "rydabwnjoaadfjvrxhdy"
 
 [functions.analyze-fire-risk]
 verify_jwt = false
+
+[functions.analyze-irrigation]
+verify_jwt = false
