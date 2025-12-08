@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -31,6 +31,10 @@ interface IrrigationAnalysisProps {
 const CACHE_KEY = 'irrigation_analysis_cache';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const MAX_RETRIES = 3;
+const ANALYSIS_COOLDOWN = 5 * 60 * 1000; // 5 minutes cooldown between auto-analyses
+
+// Global flag to prevent concurrent requests across component instances
+let isAnalyzing = false;
 
 // Generate fallback analysis when API is unavailable
 const generateFallbackAnalysis = (humidity: number, temperature: number): IrrigationResult => {
@@ -127,17 +131,36 @@ export const IrrigationAnalysis = ({ humidity, temperature, history, onAutoWater
   const [lastAnalyzed, setLastAnalyzed] = useState<Date | null>(null);
   const [isOnline, setIsOnline] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
+  const analysisRef = useRef<boolean>(false);
+  const mountedRef = useRef<boolean>(true);
 
   // Load cached result on mount
   useEffect(() => {
+    mountedRef.current = true;
     const cached = loadCachedResult();
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
       setResult(cached.result);
       setLastAnalyzed(new Date(cached.timestamp));
     }
+    return () => {
+      mountedRef.current = false;
+    };
   }, []);
 
-  const analyzeIrrigation = useCallback(async (retry = 0) => {
+  const analyzeIrrigation = useCallback(async (retry = 0, isManual = false) => {
+    // Prevent concurrent requests globally
+    if (isAnalyzing && !isManual) {
+      console.log('Analysis already in progress, skipping...');
+      return;
+    }
+    
+    // Prevent concurrent requests in this instance
+    if (analysisRef.current && !isManual) {
+      return;
+    }
+    
+    isAnalyzing = true;
+    analysisRef.current = true;
     setLoading(true);
     setRetryCount(retry);
     
@@ -146,18 +169,24 @@ export const IrrigationAnalysis = ({ humidity, temperature, history, onAutoWater
         body: { humidity, temperature, history }
       });
 
+      if (!mountedRef.current) return;
+
       if (error) {
         // Check for rate limit or payment errors
         if (error.message?.includes('429') || error.message?.includes('Rate limit')) {
           if (retry < MAX_RETRIES) {
-            const delay = Math.pow(2, retry) * 1000;
+            const delay = Math.pow(2, retry) * 2000; // Increased delay
             console.log(`Rate limited, retrying in ${delay}ms (attempt ${retry + 1}/${MAX_RETRIES})`);
             await new Promise(r => setTimeout(r, delay));
-            return analyzeIrrigation(retry + 1);
+            if (mountedRef.current) {
+              return analyzeIrrigation(retry + 1, isManual);
+            }
+            return;
           }
           setIsOnline(false);
           const fallback = generateFallbackAnalysis(humidity, temperature);
           setResult(fallback);
+          saveCachedResult(fallback);
           toast.info('Đang sử dụng phân tích offline do giới hạn API');
           return;
         }
@@ -167,9 +196,12 @@ export const IrrigationAnalysis = ({ humidity, temperature, history, onAutoWater
       if (data.error) {
         if (data.error.includes('Rate limit') || data.error.includes('429')) {
           if (retry < MAX_RETRIES) {
-            const delay = Math.pow(2, retry) * 1000;
+            const delay = Math.pow(2, retry) * 2000;
             await new Promise(r => setTimeout(r, delay));
-            return analyzeIrrigation(retry + 1);
+            if (mountedRef.current) {
+              return analyzeIrrigation(retry + 1, isManual);
+            }
+            return;
           }
           setIsOnline(false);
           const fallback = generateFallbackAnalysis(humidity, temperature);
@@ -196,6 +228,8 @@ export const IrrigationAnalysis = ({ humidity, temperature, history, onAutoWater
       }
     } catch (error) {
       console.error('Error analyzing irrigation:', error);
+      if (!mountedRef.current) return;
+      
       setIsOnline(false);
       
       // Use cached or fallback
@@ -206,21 +240,37 @@ export const IrrigationAnalysis = ({ humidity, temperature, history, onAutoWater
       } else {
         const fallback = generateFallbackAnalysis(humidity, temperature);
         setResult(fallback);
+        saveCachedResult(fallback);
         toast.info('Đang sử dụng phân tích offline');
       }
     } finally {
-      setLoading(false);
-      setRetryCount(0);
+      if (mountedRef.current) {
+        setLoading(false);
+        setRetryCount(0);
+      }
+      analysisRef.current = false;
+      isAnalyzing = false;
     }
   }, [humidity, temperature, history, onAutoWater]);
 
-  // Auto-analyze when humidity changes significantly
+  // Auto-analyze with longer cooldown and debouncing
   useEffect(() => {
-    const shouldAnalyze = !lastAnalyzed || 
-      (Date.now() - lastAnalyzed.getTime() > 120000); // Re-analyze every 2 minutes
+    // Check if enough time has passed since last analysis
+    const cached = loadCachedResult();
+    const lastAnalysisTime = cached?.timestamp || 0;
+    const timeSinceLastAnalysis = Date.now() - lastAnalysisTime;
     
-    if (shouldAnalyze && humidity > 0) {
-      analyzeIrrigation();
+    // Only auto-analyze if cooldown has passed and we have valid data
+    if (timeSinceLastAnalysis > ANALYSIS_COOLDOWN && humidity > 0 && !isAnalyzing) {
+      // Add a small random delay to prevent multiple components from analyzing at the same time
+      const randomDelay = Math.random() * 2000;
+      const timeoutId = setTimeout(() => {
+        if (mountedRef.current && !isAnalyzing) {
+          analyzeIrrigation(0, false);
+        }
+      }, randomDelay);
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [humidity, analyzeIrrigation]);
 
@@ -298,7 +348,7 @@ export const IrrigationAnalysis = ({ humidity, temperature, history, onAutoWater
             <Button
               variant="outline"
               size="sm"
-              onClick={() => analyzeIrrigation()}
+              onClick={() => analyzeIrrigation(0, true)}
               disabled={loading}
               className="border-green-500/30 hover:bg-green-500/10"
             >
