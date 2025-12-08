@@ -45,17 +45,18 @@ export const GasAlertDialog = ({ gasLevel, threshold = 50, soundEnabled = true }
       
       oscillator.start(ctx.currentTime);
       
-      // Beep pattern: on-off-on-off-on
-      const beepDuration = 0.2;
-      const pauseDuration = 0.1;
+      // Beep pattern: longer duration with more beeps
+      const beepDuration = 0.4;
+      const pauseDuration = 0.2;
+      const beepCount = 10;
       
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < beepCount; i++) {
         const startTime = ctx.currentTime + i * (beepDuration + pauseDuration);
         gainNode.gain.setValueAtTime(0.3, startTime);
         gainNode.gain.setValueAtTime(0, startTime + beepDuration);
       }
       
-      oscillator.stop(ctx.currentTime + 5 * (beepDuration + pauseDuration));
+      oscillator.stop(ctx.currentTime + beepCount * (beepDuration + pauseDuration));
     } catch (error) {
       console.error('Error playing alert sound:', error);
     }
