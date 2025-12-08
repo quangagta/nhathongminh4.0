@@ -86,8 +86,7 @@ const Index = () => {
             <FireRiskAnalysis 
               temperature={data.temperature}
               gasLevel={data.gasLevel}
-              humidity={data.humidity}
-              history={history}
+              history={history.map(h => ({ temperature: h.temperature, gasLevel: h.gasLevel }))}
             />
           </div>
 

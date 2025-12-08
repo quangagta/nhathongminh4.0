@@ -19,11 +19,10 @@ interface FireRiskResult {
 interface FireRiskAnalysisProps {
   temperature: number;
   gasLevel: number;
-  humidity: number;
-  history?: Array<{ temperature: number; gasLevel: number; humidity: number }>;
+  history?: Array<{ temperature: number; gasLevel: number }>;
 }
 
-export const FireRiskAnalysis = ({ temperature, gasLevel, humidity, history = [] }: FireRiskAnalysisProps) => {
+export const FireRiskAnalysis = ({ temperature, gasLevel, history = [] }: FireRiskAnalysisProps) => {
   const [result, setResult] = useState<FireRiskResult | null>(() => {
     // Load cached result from localStorage
     const cached = localStorage.getItem('fireRiskResult');
@@ -44,7 +43,7 @@ export const FireRiskAnalysis = ({ temperature, gasLevel, humidity, history = []
     
     try {
       const { data, error } = await supabase.functions.invoke("analyze-fire-risk", {
-        body: { temperature, gasLevel, humidity, history }
+        body: { temperature, gasLevel, history }
       });
 
       if (error) {
@@ -66,7 +65,7 @@ export const FireRiskAnalysis = ({ temperature, gasLevel, humidity, history = []
           }
           
           // Use fallback analysis after max retries
-          const fallbackResult = generateFallbackAnalysis(temperature, gasLevel, humidity);
+          const fallbackResult = generateFallbackAnalysis(temperature, gasLevel);
           setResult(fallbackResult);
           localStorage.setItem('fireRiskResult', JSON.stringify(fallbackResult));
           setLastAnalyzed(new Date());
@@ -99,7 +98,7 @@ export const FireRiskAnalysis = ({ temperature, gasLevel, humidity, history = []
       
       // If we have cached result, keep showing it
       if (!result) {
-        const fallbackResult = generateFallbackAnalysis(temperature, gasLevel, humidity);
+        const fallbackResult = generateFallbackAnalysis(temperature, gasLevel);
         setResult(fallbackResult);
       }
       
@@ -113,17 +112,17 @@ export const FireRiskAnalysis = ({ temperature, gasLevel, humidity, history = []
     }
   };
 
-  // Fallback analysis when API is unavailable
-  const generateFallbackAnalysis = (temp: number, gas: number, hum: number): FireRiskResult => {
+  // Fallback analysis when API is unavailable (no humidity)
+  const generateFallbackAnalysis = (temp: number, gas: number): FireRiskResult => {
     let riskScore = 0;
     const factors: string[] = [];
 
     // Temperature analysis
     if (temp > 45) {
-      riskScore += 40;
+      riskScore += 50;
       factors.push("Nhiệt độ rất cao");
     } else if (temp > 35) {
-      riskScore += 20;
+      riskScore += 25;
       factors.push("Nhiệt độ cao");
     }
 
@@ -136,12 +135,6 @@ export const FireRiskAnalysis = ({ temperature, gasLevel, humidity, history = []
       factors.push("Khí gas cao");
     }
 
-    // Humidity analysis
-    if (hum < 30) {
-      riskScore += 10;
-      factors.push("Độ ẩm thấp");
-    }
-
     riskScore = Math.min(100, riskScore);
     
     // Determine risk level based on score
@@ -150,19 +143,11 @@ export const FireRiskAnalysis = ({ temperature, gasLevel, humidity, history = []
       riskScore >= 50 ? "danger" :
       riskScore >= 20 ? "warning" : "safe";
 
-    // Humidity analysis
-    if (hum < 30) {
-      riskScore += 10;
-      factors.push("Độ ẩm thấp");
-    }
-
-    riskScore = Math.min(100, riskScore);
-
     return {
       riskLevel,
       riskScore,
       smokeType: gas > 60 ? "real_smoke" : gas > 30 ? "cooking" : "none",
-      analysis: "Phân tích offline dựa trên ngưỡng cảm biến. Kết nối AI để phân tích chi tiết hơn.",
+      analysis: "Phân tích offline dựa trên ngưỡng cảm biến (nhiệt độ và khí gas). Kết nối AI để phân tích chi tiết hơn.",
       recommendation: riskLevel === "critical" 
         ? "Kiểm tra ngay lập tức! Nguy cơ cháy cao."
         : riskLevel === "danger"
