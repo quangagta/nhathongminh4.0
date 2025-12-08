@@ -41,17 +41,18 @@ export const TempAlertDialog = ({ temperature, threshold = 40, soundEnabled = tr
       
       gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
       
-      const beepDuration = 0.3;
-      const pauseDuration = 0.2;
+      const beepDuration = 0.5;
+      const pauseDuration = 0.3;
+      const beepCount = 8;
       
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < beepCount; i++) {
         const startTime = ctx.currentTime + i * (beepDuration + pauseDuration);
         gainNode.gain.setValueAtTime(0.3, startTime);
         gainNode.gain.setValueAtTime(0, startTime + beepDuration);
       }
       
       oscillator.start(ctx.currentTime);
-      oscillator.stop(ctx.currentTime + 3 * (beepDuration + pauseDuration));
+      oscillator.stop(ctx.currentTime + beepCount * (beepDuration + pauseDuration));
     } catch (error) {
       console.error('Error playing alert sound:', error);
     }
