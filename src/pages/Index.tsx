@@ -5,12 +5,19 @@ import { EcosystemOverview } from "@/components/EcosystemOverview";
 import { SensorComparison } from "@/components/SensorComparison";
 import { FireRiskAnalysis } from "@/components/FireRiskAnalysis";
 import { IrrigationAnalysis } from "@/components/IrrigationAnalysis";
-import { Home, TreePine, Info, Activity, Leaf, Brain, Droplets } from "lucide-react";
+import { SettingsPanel } from "@/components/SettingsPanel";
+import { Home, TreePine, Info, Activity, Leaf, Brain, Droplets, Settings } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useFirebaseData } from "@/hooks/useFirebaseData";
 import { useSensorHistory } from "@/hooks/useSensorHistory";
 import { useTemperatureHistory } from "@/hooks/useTemperatureHistory";
 import smartHomeModel from "@/assets/smart-home-header.png";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const [scrollY, setScrollY] = useState(0);
@@ -36,6 +43,22 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Settings Button - Top Left */}
+      <div className="fixed top-4 left-4 z-50">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="icon" className="bg-background/80 backdrop-blur-sm shadow-lg border-border/50 hover:bg-primary/10">
+              <Settings className="h-5 w-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-80 sm:w-96 p-0">
+            <div className="p-4">
+              <SettingsPanel />
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
+
       {/* Hero Header with Parallax Image */}
       <div className="relative w-full h-64 md:h-80 overflow-hidden">
         <img 
