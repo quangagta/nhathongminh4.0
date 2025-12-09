@@ -4,6 +4,7 @@ export interface AlertSettings {
   gasThreshold: number;
   tempThreshold: number;
   soundEnabled: boolean;
+  soundDuration: number; // in seconds
   emailEnabled: boolean;
   alertEmail: string;
 }
@@ -12,6 +13,7 @@ const DEFAULT_SETTINGS: AlertSettings = {
   gasThreshold: 50,
   tempThreshold: 40,
   soundEnabled: true,
+  soundDuration: 3,
   emailEnabled: false,
   alertEmail: '',
 };
