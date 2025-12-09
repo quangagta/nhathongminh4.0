@@ -38,24 +38,24 @@ export const TempAlertDialog = ({ temperature, threshold = 40, soundEnabled = tr
       gainNode.connect(ctx.destination);
       
       oscillator.frequency.value = 600;
-      oscillator.type = 'sine';
+      oscillator.type = 'sawtooth';
       
-      gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+      // Continuous alarm sound with slight volume modulation for urgency
+      gainNode.gain.setValueAtTime(0.25, ctx.currentTime);
       
-      // Calculate beep count based on soundDuration setting
-      const beepDuration = 0.2;
-      const pauseDuration = 0.3;
-      const cycleTime = beepDuration + pauseDuration;
-      const beepCount = Math.floor(soundDuration / cycleTime);
-      
-      for (let i = 0; i < beepCount; i++) {
-        const startTime = ctx.currentTime + i * cycleTime;
-        gainNode.gain.setValueAtTime(0.3, startTime);
-        gainNode.gain.setValueAtTime(0, startTime + beepDuration);
-      }
+      // Add slight wobble effect for alarm feel
+      const lfo = ctx.createOscillator();
+      const lfoGain = ctx.createGain();
+      lfo.frequency.value = 4; // 4Hz wobble
+      lfoGain.gain.value = 0.1;
+      lfo.connect(lfoGain);
+      lfoGain.connect(gainNode.gain);
       
       oscillator.start(ctx.currentTime);
+      lfo.start(ctx.currentTime);
+      
       oscillator.stop(ctx.currentTime + soundDuration);
+      lfo.stop(ctx.currentTime + soundDuration);
     } catch (error) {
       console.error('Error playing alert sound:', error);
     }

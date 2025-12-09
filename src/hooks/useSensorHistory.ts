@@ -113,35 +113,34 @@ export const useSensorHistory = () => {
 const playAlertSound = (durationSeconds: number = 3) => {
   try {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const totalDuration = durationSeconds * 1000; // Convert to ms
-    const beepDuration = 200; // Each beep lasts 200ms
-    const pauseDuration = 300; // Pause between beeps 300ms
-    const cycleTime = beepDuration + pauseDuration; // 500ms per cycle
-    const beepCount = Math.floor(totalDuration / cycleTime);
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
     
-    for (let i = 0; i < beepCount; i++) {
-      setTimeout(() => {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.value = 800;
-        oscillator.type = 'sine';
-        gainNode.gain.value = 0.3;
-        
-        oscillator.start();
-        setTimeout(() => {
-          oscillator.stop();
-        }, beepDuration);
-      }, i * cycleTime);
-    }
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
     
-    // Close audio context after all beeps
+    oscillator.frequency.value = 700;
+    oscillator.type = 'sawtooth';
+    
+    // Continuous alarm sound
+    gainNode.gain.setValueAtTime(0.25, audioContext.currentTime);
+    
+    // Add wobble effect for alarm feel
+    const lfo = audioContext.createOscillator();
+    const lfoGain = audioContext.createGain();
+    lfo.frequency.value = 5;
+    lfoGain.gain.value = 0.1;
+    lfo.connect(lfoGain);
+    lfoGain.connect(gainNode.gain);
+    
+    oscillator.start();
+    lfo.start();
+    
     setTimeout(() => {
+      oscillator.stop();
+      lfo.stop();
       audioContext.close();
-    }, totalDuration + 100);
+    }, durationSeconds * 1000);
   } catch (e) {
     console.error('Could not play alert sound:', e);
   }
