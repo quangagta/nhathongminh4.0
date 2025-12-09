@@ -4,7 +4,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { useAlertSettings } from "@/hooks/useAlertSettings";
-import { Flame, Thermometer, Volume2, Settings, Mail } from "lucide-react";
+import { Flame, Thermometer, Volume2, Settings, Mail, Clock } from "lucide-react";
 
 export const SettingsPanel = () => {
   const { settings, updateSettings } = useAlertSettings();
@@ -67,16 +67,42 @@ export const SettingsPanel = () => {
         </div>
 
         {/* Sound Toggle */}
-        <div className="flex items-center justify-between pt-2 border-t border-border/50">
-          <div className="flex items-center gap-2">
-            <Volume2 className="h-4 w-4 text-blue-400" />
-            <Label htmlFor="sound-toggle" className="text-sm font-medium">Âm thanh cảnh báo</Label>
+        <div className="space-y-3 pt-2 border-t border-border/50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Volume2 className="h-4 w-4 text-blue-400" />
+              <Label htmlFor="sound-toggle" className="text-sm font-medium">Âm thanh cảnh báo</Label>
+            </div>
+            <Switch
+              id="sound-toggle"
+              checked={settings.soundEnabled}
+              onCheckedChange={(checked) => updateSettings({ soundEnabled: checked })}
+            />
           </div>
-          <Switch
-            id="sound-toggle"
-            checked={settings.soundEnabled}
-            onCheckedChange={(checked) => updateSettings({ soundEnabled: checked })}
-          />
+          
+          {settings.soundEnabled && (
+            <div className="space-y-3 pl-6">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-purple-400" />
+                <Label className="text-sm font-medium">Thời gian tiếng pip</Label>
+                <span className="ml-auto text-lg font-bold text-purple-400">
+                  {settings.soundDuration} <span className="text-xs font-normal text-muted-foreground">giây</span>
+                </span>
+              </div>
+              <Slider
+                value={[settings.soundDuration]}
+                onValueChange={(value) => updateSettings({ soundDuration: value[0] })}
+                min={1}
+                max={10}
+                step={1}
+                className="py-2"
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>1 giây</span>
+                <span>10 giây</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Email Alert Toggle */}
