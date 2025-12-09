@@ -5,16 +5,19 @@ import { EcosystemOverview } from "@/components/EcosystemOverview";
 import { SensorComparison } from "@/components/SensorComparison";
 import { FireRiskAnalysis } from "@/components/FireRiskAnalysis";
 import { IrrigationAnalysis } from "@/components/IrrigationAnalysis";
-import { Home, TreePine, Info, Activity, Leaf, Brain, Droplets } from "lucide-react";
+import { TemperatureHistoryAnalysis } from "@/components/TemperatureHistoryAnalysis";
+import { Home, TreePine, Info, Activity, Leaf, Brain, Droplets, Database } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useFirebaseData } from "@/hooks/useFirebaseData";
 import { useSensorHistory } from "@/hooks/useSensorHistory";
+import { useTemperatureHistory } from "@/hooks/useTemperatureHistory";
 import smartHomeModel from "@/assets/smart-home-header.png";
 
 const Index = () => {
   const [scrollY, setScrollY] = useState(0);
   const { data } = useFirebaseData();
   const { history } = useSensorHistory();
+  useTemperatureHistory(); // Auto-save temperature to database
 
   useEffect(() => {
     const handleScroll = () => {
@@ -112,6 +115,15 @@ const Index = () => {
                 history={humidityHistory}
               />
             </div>
+          </div>
+
+          {/* Temperature History Analysis */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <Database className="w-6 h-6 text-orange-500" />
+              <h2 className="text-2xl font-bold">Phân Tích Lịch Sử Nhiệt Độ</h2>
+            </div>
+            <TemperatureHistoryAnalysis />
           </div>
 
           {/* Sensor Comparison */}
