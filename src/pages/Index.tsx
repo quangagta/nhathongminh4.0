@@ -1,13 +1,15 @@
-import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { SensorChart } from "@/components/SensorChart";
 import { EcosystemOverview } from "@/components/EcosystemOverview";
 import { SensorComparison } from "@/components/SensorComparison";
 import { FireRiskAnalysis } from "@/components/FireRiskAnalysis";
 import { IrrigationAnalysis } from "@/components/IrrigationAnalysis";
+import { RainfallAnalysis } from "@/components/RainfallAnalysis";
 import { SettingsPanel } from "@/components/SettingsPanel";
-import { Home, TreePine, Info, Activity, Leaf, Brain, Droplets, Settings } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Activity, Leaf, Brain, Droplets, Settings, CloudRain } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { useRainfallData } from "@/hooks/useRainfallData";
+import { Badge } from "@/components/ui/badge";
 import { useFirebaseData } from "@/hooks/useFirebaseData";
 import { useSensorHistory } from "@/hooks/useSensorHistory";
 import { useTemperatureHistory } from "@/hooks/useTemperatureHistory";
@@ -23,8 +25,23 @@ const Index = () => {
   const [scrollY, setScrollY] = useState(0);
   const { data } = useFirebaseData();
   const { history } = useSensorHistory();
+  const { data: rainfallData, loading: rainfallLoading } = useRainfallData();
+  const rainfallHistoryRef = useRef<Array<{ time: string; intensity: number; isRaining: boolean }>>([]);
   useTemperatureHistory(); // Auto-save temperature to database
 
+  // Build rainfall history
+  useEffect(() => {
+    if (!rainfallLoading && rainfallData.timestamp) {
+      rainfallHistoryRef.current = [
+        ...rainfallHistoryRef.current.slice(-19),
+        {
+          time: rainfallData.timestamp,
+          intensity: rainfallData.rainIntensity,
+          isRaining: rainfallData.isRaining
+        }
+      ];
+    }
+  }, [rainfallData, rainfallLoading]);
   useEffect(() => {
     const handleScroll = () => {
       setScrollY(window.scrollY);
@@ -101,50 +118,29 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Navigation Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <Link to="/indoor">
-              <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 border-orange-200 dark:border-orange-800">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-full bg-orange-100 dark:bg-orange-900/50">
-                    <Home className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">Trong Nhà</h3>
-                    <p className="text-sm text-muted-foreground">Đèn, quạt, khóa cửa</p>
-                  </div>
+          {/* Rain Status Banner */}
+          {!rainfallLoading && (
+            <div className={`mb-6 p-4 rounded-lg flex items-center justify-between ${
+              rainfallData.isRaining 
+                ? 'bg-gradient-to-r from-blue-100 to-sky-100 dark:from-blue-900/30 dark:to-sky-900/30 border border-blue-200 dark:border-blue-700' 
+                : 'bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-700'
+            }`}>
+              <div className="flex items-center gap-3">
+                <CloudRain className={`h-6 w-6 ${rainfallData.isRaining ? 'text-blue-500' : 'text-yellow-500'}`} />
+                <div>
+                  <p className="font-medium text-foreground">
+                    {rainfallData.isRaining ? '🌧️ Đang có mưa' : '☀️ Trời không mưa'}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Cường độ: {rainfallData.rainIntensity}%
+                  </p>
                 </div>
-              </Card>
-            </Link>
-            
-            <Link to="/outdoor">
-              <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-green-200 dark:border-green-800">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-full bg-green-100 dark:bg-green-900/50">
-                    <TreePine className="w-6 h-6 text-green-600 dark:text-green-400" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">Vườn Rau</h3>
-                    <p className="text-sm text-muted-foreground">Máy bơm, mưa, độ ẩm</p>
-                  </div>
-                </div>
-              </Card>
-            </Link>
-            
-            <Link to="/info">
-              <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200 dark:border-blue-800">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900/50">
-                    <Info className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg">Thông Tin</h3>
-                    <p className="text-sm text-muted-foreground">Chỉ số tối ưu hệ sinh thái</p>
-                  </div>
-                </div>
-              </Card>
-            </Link>
-          </div>
+              </div>
+              <Badge className={rainfallData.isRaining ? 'bg-blue-500' : 'bg-yellow-500'}>
+                {rainfallData.isRaining ? 'Mưa' : 'Nắng'}
+              </Badge>
+            </div>
+          )}
 
           {/* Ecosystem Overview */}
           <div className="mb-8">
@@ -155,8 +151,8 @@ const Index = () => {
             <EcosystemOverview />
           </div>
 
-          {/* AI Analysis Section - 2 columns on larger screens */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* AI Analysis Section - 3 columns on larger screens */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             {/* AI Fire Risk Analysis */}
             <div>
               <div className="flex items-center gap-3 mb-4">
@@ -180,6 +176,19 @@ const Index = () => {
                 humidity={data.humidity}
                 temperature={data.temperature}
                 history={humidityHistory}
+              />
+            </div>
+
+            {/* AI Rainfall Analysis */}
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <CloudRain className="w-6 h-6 text-blue-500" />
+                <h2 className="text-xl font-bold">AI Phân Tích Mưa</h2>
+              </div>
+              <RainfallAnalysis
+                isRaining={rainfallData.isRaining}
+                rainIntensity={rainfallData.rainIntensity}
+                history={rainfallHistoryRef.current}
               />
             </div>
           </div>
