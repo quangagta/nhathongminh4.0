@@ -18,7 +18,7 @@ export const useSensorHistory = () => {
   const { settings } = useAlertSettings();
   const { sendAlertEmail } = useEmailAlert();
   const [history, setHistory] = useState<SensorHistoryPoint[]>([]);
-  const lastAlertRef = useRef<{ gas: number; temp: number; humidity: number }>({ gas: 0, temp: 0, humidity: 0 });
+  const lastAlertRef = useRef<{ gas: number; temp: number; humidity: number; fire: number }>({ gas: 0, temp: 0, humidity: 0, fire: 0 });
 
   useEffect(() => {
     if (loading || error) return;
@@ -86,8 +86,9 @@ export const useSensorHistory = () => {
       }
     }
 
-    // Fire risk alert - both gas AND temperature are high
-    if (data.gasLevel > settings.gasThreshold && data.temperature > settings.tempThreshold) {
+    // Fire risk alert - both gas AND temperature are high (with cooldown)
+    if (data.gasLevel > settings.gasThreshold && data.temperature > settings.tempThreshold && now_ms - lastAlertRef.current.fire > 30000) {
+      lastAlertRef.current.fire = now_ms;
       if (settings.emailEnabled && settings.alertEmail) {
         sendAlertEmail(
           settings.alertEmail,
