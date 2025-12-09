@@ -4,12 +4,16 @@ export interface AlertSettings {
   gasThreshold: number;
   tempThreshold: number;
   soundEnabled: boolean;
+  emailEnabled: boolean;
+  alertEmail: string;
 }
 
 const DEFAULT_SETTINGS: AlertSettings = {
   gasThreshold: 50,
   tempThreshold: 40,
   soundEnabled: true,
+  emailEnabled: false,
+  alertEmail: '',
 };
 
 const STORAGE_KEY = 'smart_home_alert_settings';
