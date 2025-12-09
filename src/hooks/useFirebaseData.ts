@@ -25,7 +25,7 @@ export const useFirebaseData = () => {
     
     const tempRef = ref(database, 'nhietdo');
     const gasRef = ref(database, 'khiga');
-    const humidityRef = ref(database, 'khoai');
+    const humidityRef = ref(database, 'doam');
 
     let tempLoaded = false;
     let gasLoaded = false;
