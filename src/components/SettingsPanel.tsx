@@ -2,8 +2,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
 import { useAlertSettings } from "@/hooks/useAlertSettings";
-import { Flame, Thermometer, Volume2, Settings } from "lucide-react";
+import { Flame, Thermometer, Volume2, Settings, Mail } from "lucide-react";
 
 export const SettingsPanel = () => {
   const { settings, updateSettings } = useAlertSettings();
@@ -76,6 +77,40 @@ export const SettingsPanel = () => {
             checked={settings.soundEnabled}
             onCheckedChange={(checked) => updateSettings({ soundEnabled: checked })}
           />
+        </div>
+
+        {/* Email Alert Toggle */}
+        <div className="space-y-3 pt-2 border-t border-border/50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Mail className="h-4 w-4 text-green-400" />
+              <Label htmlFor="email-toggle" className="text-sm font-medium">Gửi email cảnh báo</Label>
+            </div>
+            <Switch
+              id="email-toggle"
+              checked={settings.emailEnabled}
+              onCheckedChange={(checked) => updateSettings({ emailEnabled: checked })}
+            />
+          </div>
+          
+          {settings.emailEnabled && (
+            <div className="space-y-2">
+              <Label htmlFor="alert-email" className="text-xs text-muted-foreground">
+                Email nhận cảnh báo
+              </Label>
+              <Input
+                id="alert-email"
+                type="email"
+                placeholder="example@gmail.com"
+                value={settings.alertEmail}
+                onChange={(e) => updateSettings({ alertEmail: e.target.value })}
+                className="bg-background/50"
+              />
+              <p className="text-xs text-muted-foreground">
+                Khi gas hoặc nhiệt độ vượt ngưỡng, hệ thống sẽ gửi email cảnh báo đến địa chỉ này.
+              </p>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useFirebaseData } from './useFirebaseData';
 import { useAlertSettings } from './useAlertSettings';
+import { useEmailAlert } from './useEmailAlert';
 import { toast } from 'sonner';
 
 export interface SensorHistoryPoint {
@@ -15,6 +16,7 @@ const MAX_HISTORY_POINTS = 20;
 export const useSensorHistory = () => {
   const { data, loading, error } = useFirebaseData();
   const { settings } = useAlertSettings();
+  const { sendAlertEmail } = useEmailAlert();
   const [history, setHistory] = useState<SensorHistoryPoint[]>([]);
   const lastAlertRef = useRef<{ gas: number; temp: number; humidity: number }>({ gas: 0, temp: 0, humidity: 0 });
 
@@ -42,6 +44,7 @@ export const useSensorHistory = () => {
     // Check alerts with cooldown (30 seconds)
     const now_ms = Date.now();
     
+    // Gas alert
     if (data.gasLevel > settings.gasThreshold && now_ms - lastAlertRef.current.gas > 30000) {
       toast.error(`⚠️ Cảnh báo khí gas: ${data.gasLevel} ppm vượt ngưỡng ${settings.gasThreshold} ppm!`, {
         duration: 5000,
@@ -50,8 +53,19 @@ export const useSensorHistory = () => {
       if (settings.soundEnabled) {
         playAlertSound();
       }
+      // Send email alert
+      if (settings.emailEnabled && settings.alertEmail) {
+        sendAlertEmail(
+          settings.alertEmail,
+          'gas',
+          data.gasLevel,
+          settings.gasThreshold,
+          { temperature: data.temperature }
+        );
+      }
     }
 
+    // Temperature alert
     if (data.temperature > settings.tempThreshold && now_ms - lastAlertRef.current.temp > 30000) {
       toast.error(`⚠️ Cảnh báo nhiệt độ: ${data.temperature}°C vượt ngưỡng ${settings.tempThreshold}°C!`, {
         duration: 5000,
@@ -59,6 +73,29 @@ export const useSensorHistory = () => {
       lastAlertRef.current.temp = now_ms;
       if (settings.soundEnabled) {
         playAlertSound();
+      }
+      // Send email alert
+      if (settings.emailEnabled && settings.alertEmail) {
+        sendAlertEmail(
+          settings.alertEmail,
+          'temperature',
+          data.temperature,
+          settings.tempThreshold,
+          { gasLevel: data.gasLevel }
+        );
+      }
+    }
+
+    // Fire risk alert - both gas AND temperature are high
+    if (data.gasLevel > settings.gasThreshold && data.temperature > settings.tempThreshold) {
+      if (settings.emailEnabled && settings.alertEmail) {
+        sendAlertEmail(
+          settings.alertEmail,
+          'fire',
+          data.gasLevel,
+          settings.gasThreshold,
+          { gasLevel: data.gasLevel, temperature: data.temperature }
+        );
       }
     }
 
@@ -68,7 +105,7 @@ export const useSensorHistory = () => {
       });
       lastAlertRef.current.humidity = now_ms;
     }
-  }, [data, loading, error, settings]);
+  }, [data, loading, error, settings, sendAlertEmail]);
 
   return { history, currentData: data, loading, error, settings };
 };
