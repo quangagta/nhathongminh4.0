@@ -51,7 +51,7 @@ export const useSensorHistory = () => {
       });
       lastAlertRef.current.gas = now_ms;
       if (settings.soundEnabled) {
-        playAlertSound();
+        playAlertSound(settings.soundDuration);
       }
       // Send email alert
       if (settings.emailEnabled && settings.alertEmail) {
@@ -72,7 +72,7 @@ export const useSensorHistory = () => {
       });
       lastAlertRef.current.temp = now_ms;
       if (settings.soundEnabled) {
-        playAlertSound();
+        playAlertSound(settings.soundDuration);
       }
       // Send email alert
       if (settings.emailEnabled && settings.alertEmail) {
@@ -110,24 +110,38 @@ export const useSensorHistory = () => {
   return { history, currentData: data, loading, error, settings };
 };
 
-const playAlertSound = () => {
+const playAlertSound = (durationSeconds: number = 3) => {
   try {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+    const totalDuration = durationSeconds * 1000; // Convert to ms
+    const beepDuration = 200; // Each beep lasts 200ms
+    const pauseDuration = 300; // Pause between beeps 300ms
+    const cycleTime = beepDuration + pauseDuration; // 500ms per cycle
+    const beepCount = Math.floor(totalDuration / cycleTime);
     
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    for (let i = 0; i < beepCount; i++) {
+      setTimeout(() => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+        gainNode.gain.value = 0.3;
+        
+        oscillator.start();
+        setTimeout(() => {
+          oscillator.stop();
+        }, beepDuration);
+      }, i * cycleTime);
+    }
     
-    oscillator.frequency.value = 800;
-    oscillator.type = 'sine';
-    gainNode.gain.value = 0.3;
-    
-    oscillator.start();
+    // Close audio context after all beeps
     setTimeout(() => {
-      oscillator.stop();
       audioContext.close();
-    }, 500);
+    }, totalDuration + 100);
   } catch (e) {
     console.error('Could not play alert sound:', e);
   }
