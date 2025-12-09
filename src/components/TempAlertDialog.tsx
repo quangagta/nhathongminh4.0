@@ -14,9 +14,10 @@ interface TempAlertDialogProps {
   temperature: number;
   threshold?: number;
   soundEnabled?: boolean;
+  soundDuration?: number;
 }
 
-export const TempAlertDialog = ({ temperature, threshold = 40, soundEnabled = true }: TempAlertDialogProps) => {
+export const TempAlertDialog = ({ temperature, threshold = 40, soundEnabled = true, soundDuration = 3 }: TempAlertDialogProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [hasAlerted, setHasAlerted] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -41,18 +42,20 @@ export const TempAlertDialog = ({ temperature, threshold = 40, soundEnabled = tr
       
       gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
       
-      const beepDuration = 0.5;
+      // Calculate beep count based on soundDuration setting
+      const beepDuration = 0.2;
       const pauseDuration = 0.3;
-      const beepCount = 8;
+      const cycleTime = beepDuration + pauseDuration;
+      const beepCount = Math.floor(soundDuration / cycleTime);
       
       for (let i = 0; i < beepCount; i++) {
-        const startTime = ctx.currentTime + i * (beepDuration + pauseDuration);
+        const startTime = ctx.currentTime + i * cycleTime;
         gainNode.gain.setValueAtTime(0.3, startTime);
         gainNode.gain.setValueAtTime(0, startTime + beepDuration);
       }
       
       oscillator.start(ctx.currentTime);
-      oscillator.stop(ctx.currentTime + beepCount * (beepDuration + pauseDuration));
+      oscillator.stop(ctx.currentTime + soundDuration);
     } catch (error) {
       console.error('Error playing alert sound:', error);
     }

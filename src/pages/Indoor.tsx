@@ -108,14 +108,16 @@ const Indoor = () => {
         <GasAlertDialog 
           gasLevel={gasLevel} 
           threshold={settings.gasThreshold} 
-          soundEnabled={settings.soundEnabled} 
+          soundEnabled={settings.soundEnabled}
+          soundDuration={settings.soundDuration}
         />
         
         {/* Dialog cảnh báo nhiệt độ */}
         <TempAlertDialog 
           temperature={temperature} 
           threshold={settings.tempThreshold} 
-          soundEnabled={settings.soundEnabled} 
+          soundEnabled={settings.soundEnabled}
+          soundDuration={settings.soundDuration}
         />
       </div>
     </div>
