@@ -159,14 +159,27 @@ export const FireRiskAnalysis = ({ temperature, gasLevel, history = [] }: FireRi
     };
   };
 
-  // Auto-analyze when data changes significantly (increased cooldown to 2 minutes)
+  // Auto-analyze with 5 minute cooldown and debouncing to prevent rate limiting
   useEffect(() => {
+    const cooldownMs = 300000; // 5 minutes
     const shouldAutoAnalyze = 
       !lastAnalyzed || 
-      (new Date().getTime() - lastAnalyzed.getTime()) > 120000; // 2 minutes
+      (new Date().getTime() - lastAnalyzed.getTime()) > cooldownMs;
 
-    if (shouldAutoAnalyze && (temperature > 0 || gasLevel > 0)) {
-      analyzeRisk();
+    if (shouldAutoAnalyze && (temperature > 0 || gasLevel > 0) && !loading) {
+      // Add random delay (0-30s) to prevent simultaneous requests from multiple instances
+      const randomDelay = Math.random() * 30000;
+      const timeoutId = setTimeout(() => {
+        // Double check cooldown after delay
+        const stillShouldAnalyze = 
+          !lastAnalyzed || 
+          (new Date().getTime() - lastAnalyzed.getTime()) > cooldownMs;
+        if (stillShouldAnalyze && !loading) {
+          analyzeRisk();
+        }
+      }, randomDelay);
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [temperature, gasLevel]);
 
