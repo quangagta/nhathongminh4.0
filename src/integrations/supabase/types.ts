@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      rainfall_history: {
+        Row: {
+          id: string
+          is_raining: boolean
+          rain_intensity: number | null
+          recorded_at: string
+        }
+        Insert: {
+          id?: string
+          is_raining?: boolean
+          rain_intensity?: number | null
+          recorded_at?: string
+        }
+        Update: {
+          id?: string
+          is_raining?: boolean
+          rain_intensity?: number | null
+          recorded_at?: string
+        }
+        Relationships: []
+      }
       temperature_history: {
         Row: {
           gas_level: number | null
@@ -43,6 +64,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_old_rainfall_data: { Args: never; Returns: undefined }
       cleanup_old_temperature_data: { Args: never; Returns: undefined }
     }
     Enums: {
