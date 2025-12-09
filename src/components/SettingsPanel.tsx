@@ -5,7 +5,8 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAlertSettings } from "@/hooks/useAlertSettings";
-import { Flame, Thermometer, Volume2, Settings, Mail, Clock, Play, Square } from "lucide-react";
+import { Flame, Thermometer, Volume2, Settings, Mail, Clock, Play, Square, Check } from "lucide-react";
+import { toast } from "sonner";
 import { useState, useRef } from "react";
 
 export const SettingsPanel = () => {
@@ -227,6 +228,21 @@ export const SettingsPanel = () => {
               </p>
             </div>
           )}
+        </div>
+
+        {/* Confirm Button */}
+        <div className="pt-4 border-t border-border/50">
+          <Button
+            onClick={() => {
+              toast.success("Đã lưu cài đặt cảnh báo!", {
+                description: `Gas: ${settings.gasThreshold}ppm | Nhiệt độ: ${settings.tempThreshold}°C | Âm thanh: ${settings.soundEnabled ? settings.soundDuration + 's' : 'Tắt'}`,
+              });
+            }}
+            className="w-full bg-green-600 hover:bg-green-700"
+          >
+            <Check className="h-4 w-4 mr-2" />
+            Xác nhận cài đặt
+          </Button>
         </div>
       </CardContent>
     </Card>
