@@ -14,13 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      temperature_history: {
+        Row: {
+          gas_level: number | null
+          humidity: number | null
+          id: string
+          recorded_at: string
+          temperature: number
+        }
+        Insert: {
+          gas_level?: number | null
+          humidity?: number | null
+          id?: string
+          recorded_at?: string
+          temperature: number
+        }
+        Update: {
+          gas_level?: number | null
+          humidity?: number | null
+          id?: string
+          recorded_at?: string
+          temperature?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      cleanup_old_temperature_data: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
