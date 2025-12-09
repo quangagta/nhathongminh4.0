@@ -51,8 +51,8 @@ const Index = () => {
               <Settings className="h-5 w-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-80 sm:w-96 p-0">
-            <div className="p-4">
+          <SheetContent side="left" className="w-80 sm:w-96 p-0 overflow-y-auto">
+            <div className="p-4 pb-8">
               <SettingsPanel />
             </div>
           </SheetContent>
