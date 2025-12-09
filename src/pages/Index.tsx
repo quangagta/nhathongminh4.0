@@ -1,12 +1,9 @@
-import { Card } from "@/components/ui/card";
 import { SensorChart } from "@/components/SensorChart";
 import { EcosystemOverview } from "@/components/EcosystemOverview";
 import { SensorComparison } from "@/components/SensorComparison";
-import { FireRiskAnalysis } from "@/components/FireRiskAnalysis";
-import { IrrigationAnalysis } from "@/components/IrrigationAnalysis";
-import { RainfallAnalysis } from "@/components/RainfallAnalysis";
+import { AIAnalysisTabs } from "@/components/AIAnalysisTabs";
 import { SettingsPanel } from "@/components/SettingsPanel";
-import { Activity, Leaf, Brain, Droplets, Settings, CloudRain } from "lucide-react";
+import { Activity, Leaf, Settings, CloudRain } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useRainfallData } from "@/hooks/useRainfallData";
 import { Badge } from "@/components/ui/badge";
@@ -151,46 +148,20 @@ const Index = () => {
             <EcosystemOverview />
           </div>
 
-          {/* AI Analysis Section - 3 columns on larger screens */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            {/* AI Fire Risk Analysis */}
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <Brain className="w-6 h-6 text-primary" />
-                <h2 className="text-xl font-bold">AI Phân Tích Nguy Cơ Cháy</h2>
-              </div>
-              <FireRiskAnalysis 
-                temperature={data.temperature}
-                gasLevel={data.gasLevel}
-                history={history.map(h => ({ temperature: h.temperature, gasLevel: h.gasLevel }))}
-              />
-            </div>
-
-            {/* AI Soil Moisture Analysis */}
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <Droplets className="w-6 h-6 text-green-500" />
-                <h2 className="text-xl font-bold">AI Phân Tích Độ Ẩm Đất</h2>
-              </div>
-              <IrrigationAnalysis
-                humidity={data.humidity}
-                temperature={data.temperature}
-                history={humidityHistory}
-              />
-            </div>
-
-            {/* AI Rainfall Analysis */}
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <CloudRain className="w-6 h-6 text-blue-500" />
-                <h2 className="text-xl font-bold">AI Phân Tích Mưa</h2>
-              </div>
-              <RainfallAnalysis
-                isRaining={rainfallData.isRaining}
-                rainIntensity={rainfallData.rainIntensity}
-                history={rainfallHistoryRef.current}
-              />
-            </div>
+          {/* AI Analysis Section with Tabs */}
+          <div className="mb-8">
+            <AIAnalysisTabs
+              temperature={data.temperature}
+              gasLevel={data.gasLevel}
+              humidity={data.humidity}
+              sensorHistory={history.map(h => ({ temperature: h.temperature, gasLevel: h.gasLevel }))}
+              humidityHistory={humidityHistory}
+              rainfallData={{
+                isRaining: rainfallData.isRaining,
+                rainIntensity: rainfallData.rainIntensity
+              }}
+              rainfallHistory={rainfallHistoryRef.current}
+            />
           </div>
 
           {/* Sensor Comparison */}
