@@ -3,11 +3,81 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useAlertSettings } from "@/hooks/useAlertSettings";
-import { Flame, Thermometer, Volume2, Settings, Mail, Clock } from "lucide-react";
+import { Flame, Thermometer, Volume2, Settings, Mail, Clock, Play, Square } from "lucide-react";
+import { useState, useRef } from "react";
 
 export const SettingsPanel = () => {
   const { settings, updateSettings } = useAlertSettings();
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const oscillatorRef = useRef<OscillatorNode | null>(null);
+  const lfoRef = useRef<OscillatorNode | null>(null);
+
+  const playTestSound = () => {
+    if (isPlaying) {
+      // Stop sound
+      if (oscillatorRef.current) {
+        oscillatorRef.current.stop();
+        oscillatorRef.current = null;
+      }
+      if (lfoRef.current) {
+        lfoRef.current.stop();
+        lfoRef.current = null;
+      }
+      setIsPlaying(false);
+      return;
+    }
+
+    try {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const ctx = audioContextRef.current;
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      
+      oscillator.frequency.value = 700;
+      oscillator.type = 'sawtooth';
+      gainNode.gain.setValueAtTime(0.25, ctx.currentTime);
+      
+      // Add wobble effect
+      const lfo = ctx.createOscillator();
+      const lfoGain = ctx.createGain();
+      lfo.frequency.value = 5;
+      lfoGain.gain.value = 0.1;
+      lfo.connect(lfoGain);
+      lfoGain.connect(gainNode.gain);
+      
+      oscillatorRef.current = oscillator;
+      lfoRef.current = lfo;
+      
+      oscillator.start();
+      lfo.start();
+      setIsPlaying(true);
+      
+      // Auto stop after duration
+      setTimeout(() => {
+        if (oscillatorRef.current) {
+          oscillatorRef.current.stop();
+          oscillatorRef.current = null;
+        }
+        if (lfoRef.current) {
+          lfoRef.current.stop();
+          lfoRef.current = null;
+        }
+        if (audioContextRef.current) {
+          audioContextRef.current.close();
+        }
+        setIsPlaying(false);
+      }, settings.soundDuration * 1000);
+    } catch (error) {
+      console.error('Error playing test sound:', error);
+      setIsPlaying(false);
+    }
+  };
 
   return (
     <Card className="bg-card/50 backdrop-blur border-border/50">
@@ -84,7 +154,7 @@ export const SettingsPanel = () => {
             <div className="space-y-3 pl-6">
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-purple-400" />
-                <Label className="text-sm font-medium">Thời gian tiếng pip</Label>
+                <Label className="text-sm font-medium">Thời gian âm thanh</Label>
                 <span className="ml-auto text-lg font-bold text-purple-400">
                   {settings.soundDuration} <span className="text-xs font-normal text-muted-foreground">giây</span>
                 </span>
@@ -101,6 +171,26 @@ export const SettingsPanel = () => {
                 <span>1 giây</span>
                 <span>10 giây</span>
               </div>
+              
+              {/* Test Sound Button */}
+              <Button
+                variant={isPlaying ? "destructive" : "outline"}
+                size="sm"
+                onClick={playTestSound}
+                className="w-full mt-2"
+              >
+                {isPlaying ? (
+                  <>
+                    <Square className="h-4 w-4 mr-2" />
+                    Dừng ({settings.soundDuration}s)
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-4 w-4 mr-2" />
+                    Test âm thanh ({settings.soundDuration}s)
+                  </>
+                )}
+              </Button>
             </div>
           )}
         </div>
