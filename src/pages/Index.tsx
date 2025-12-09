@@ -101,6 +101,51 @@ const Index = () => {
             </p>
           </div>
 
+          {/* Navigation Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <Link to="/indoor">
+              <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 border-orange-200 dark:border-orange-800">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-full bg-orange-100 dark:bg-orange-900/50">
+                    <Home className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">Trong Nhà</h3>
+                    <p className="text-sm text-muted-foreground">Đèn, quạt, khóa cửa</p>
+                  </div>
+                </div>
+              </Card>
+            </Link>
+            
+            <Link to="/outdoor">
+              <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 border-green-200 dark:border-green-800">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-full bg-green-100 dark:bg-green-900/50">
+                    <TreePine className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">Vườn Rau</h3>
+                    <p className="text-sm text-muted-foreground">Máy bơm, mưa, độ ẩm</p>
+                  </div>
+                </div>
+              </Card>
+            </Link>
+            
+            <Link to="/info">
+              <Card className="p-6 hover:shadow-lg transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200 dark:border-blue-800">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-900/50">
+                    <Info className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">Thông Tin</h3>
+                    <p className="text-sm text-muted-foreground">Chỉ số tối ưu hệ sinh thái</p>
+                  </div>
+                </div>
+              </Card>
+            </Link>
+          </div>
+
           {/* Ecosystem Overview */}
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-4">
