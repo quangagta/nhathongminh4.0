@@ -95,8 +95,8 @@ export const useFirebaseData = () => {
         if (snapshot.exists()) {
           const rawValue = snapshot.val();
           const analogValue = typeof rawValue === 'number' ? rawValue : parseFloat(rawValue) || 0;
-          // Chuyển đổi: analog cao = đất khô, analog thấp = đất ướt
-          const humidityPercent = Math.round(100 - (analogValue / 1023 * 100));
+          // Chuyển đổi: analog cao = % cao
+          const humidityPercent = Math.round((analogValue / 1023) * 100);
           console.log('Humidity percent:', humidityPercent);
           setData(prev => ({
             ...prev,
