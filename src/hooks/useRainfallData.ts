@@ -34,8 +34,8 @@ export const useRainfallData = () => {
         console.log('Rain value:', snapshot.val());
         if (snapshot.exists()) {
           const rawValue = snapshot.val();
-          // Giá trị 1 = có mưa, 0 = không mưa
-          const isRaining = rawValue === 1 || rawValue === true;
+          // Giá trị 0 = có mưa, 1 = không mưa
+          const isRaining = rawValue === 0 || rawValue === false;
           const rainIntensity = isRaining ? 100 : 0;
           
           console.log('Is raining:', isRaining);
