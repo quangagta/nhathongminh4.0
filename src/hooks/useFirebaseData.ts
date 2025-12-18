@@ -25,7 +25,7 @@ export const useFirebaseData = () => {
     
     const tempRef = ref(database, 'sensor/nhietdo');
     const gasRef = ref(database, 'sensor/khiga');
-    const humidityRef = ref(database, 'sensor/doam');
+    const humidityRef = ref(database, 'sensor/dat'); // Đọc từ dat (analog 0-1023)
 
     let tempLoaded = false;
     let gasLoaded = false;
@@ -87,17 +87,20 @@ export const useFirebaseData = () => {
       setLoading(false);
     };
 
-    // Lắng nghe độ ẩm (giá trị % trực tiếp từ Firebase)
+    // Lắng nghe độ ẩm đất (chuyển đổi từ analog 0-1023 sang %)
     const handleHumidity = (snapshot: any) => {
       try {
         console.log('Humidity snapshot exists:', snapshot.exists());
-        console.log('Humidity value:', snapshot.val());
+        console.log('Humidity raw value:', snapshot.val());
         if (snapshot.exists()) {
-          const value = snapshot.val();
-          const humidity = typeof value === 'number' ? value : parseFloat(value) || 0;
+          const rawValue = snapshot.val();
+          const analogValue = typeof rawValue === 'number' ? rawValue : parseFloat(rawValue) || 0;
+          // Chuyển đổi: analog cao = đất khô, analog thấp = đất ướt
+          const humidityPercent = Math.round(100 - (analogValue / 1023 * 100));
+          console.log('Humidity percent:', humidityPercent);
           setData(prev => ({
             ...prev,
-            humidity: Math.max(0, Math.min(100, humidity))
+            humidity: Math.max(0, Math.min(100, humidityPercent))
           }));
           setError(null);
         }
