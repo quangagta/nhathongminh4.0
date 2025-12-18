@@ -25,26 +25,24 @@ export const useRainfallData = () => {
   useEffect(() => {
     console.log('Connecting to Firebase for rain sensor...');
     
-    // Path for rain sensor - adjust based on your Firebase structure
-    const rainRef = ref(database, 'MUA/GiaTri_Analog');
+    // Path for rain sensor - giá trị 0 hoặc 1
+    const rainRef = ref(database, 'mua');
 
     const handleRain = (snapshot: any) => {
       try {
         console.log('Rain snapshot exists:', snapshot.exists());
-        console.log('Rain raw value:', snapshot.val());
+        console.log('Rain value:', snapshot.val());
         if (snapshot.exists()) {
           const rawValue = snapshot.val();
-          const analogValue = typeof rawValue === 'number' ? rawValue : parseFloat(rawValue) || 0;
-          // Convert analog value (0-1023) to percentage
-          // Low analog value = more rain, high value = no rain
-          const rainIntensity = Math.round(100 - (analogValue / 1023 * 100));
-          const isRaining = rainIntensity > 20; // Consider it raining if intensity > 20%
+          // Giá trị 1 = có mưa, 0 = không mưa
+          const isRaining = rawValue === 1 || rawValue === true;
+          const rainIntensity = isRaining ? 100 : 0;
           
-          console.log('Rain intensity:', rainIntensity, 'Is raining:', isRaining);
+          console.log('Is raining:', isRaining);
           
           setData({
             isRaining,
-            rainIntensity: Math.max(0, Math.min(100, rainIntensity)),
+            rainIntensity,
             timestamp: new Date().toLocaleTimeString('vi-VN')
           });
           setError(null);

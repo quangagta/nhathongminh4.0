@@ -25,7 +25,7 @@ export const useFirebaseData = () => {
     
     const tempRef = ref(database, 'nhietdo');
     const gasRef = ref(database, 'khiga');
-    const humidityRef = ref(database, 'DAT/GiaTri_Analog');
+    const humidityRef = ref(database, 'doam');
 
     let tempLoaded = false;
     let gasLoaded = false;
@@ -87,20 +87,17 @@ export const useFirebaseData = () => {
       setLoading(false);
     };
 
-    // Lắng nghe độ ẩm (chuyển đổi từ analog 0-1023 sang %)
+    // Lắng nghe độ ẩm (giá trị % trực tiếp từ Firebase)
     const handleHumidity = (snapshot: any) => {
       try {
         console.log('Humidity snapshot exists:', snapshot.exists());
-        console.log('Humidity raw value:', snapshot.val());
+        console.log('Humidity value:', snapshot.val());
         if (snapshot.exists()) {
-          const rawValue = snapshot.val();
-          const analogValue = typeof rawValue === 'number' ? rawValue : parseFloat(rawValue) || 0;
-          // Chuyển đổi: analog cao = đất khô, analog thấp = đất ướt
-          const humidityPercent = Math.round(100 - (analogValue / 1023 * 100));
-          console.log('Humidity percent:', humidityPercent);
+          const value = snapshot.val();
+          const humidity = typeof value === 'number' ? value : parseFloat(value) || 0;
           setData(prev => ({
             ...prev,
-            humidity: Math.max(0, Math.min(100, humidityPercent))
+            humidity: Math.max(0, Math.min(100, humidity))
           }));
           setError(null);
         }

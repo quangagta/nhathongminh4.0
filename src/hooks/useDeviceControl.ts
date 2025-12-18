@@ -13,7 +13,7 @@ export interface DeviceStates {
 const devicePaths: Record<keyof DeviceStates, string> = {
   light1: 'Den_TrangThai_HienThi',
   light2: 'Den_TrangThai_HienThi',
-  fan: 'Quat_TrangThai_HienThi',
+  fan: 'quat',
   pump: 'Pump_TrangThai_HienThi'
 };
 
