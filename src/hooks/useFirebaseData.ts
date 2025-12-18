@@ -23,9 +23,9 @@ export const useFirebaseData = () => {
     console.log('Firebase database:', database);
     console.log('Connecting to Firebase...');
     
-    const tempRef = ref(database, 'nhietdo');
-    const gasRef = ref(database, 'khiga');
-    const humidityRef = ref(database, 'doam');
+    const tempRef = ref(database, 'sensor/nhietdo');
+    const gasRef = ref(database, 'sensor/khiga');
+    const humidityRef = ref(database, 'sensor/doam');
 
     let tempLoaded = false;
     let gasLoaded = false;

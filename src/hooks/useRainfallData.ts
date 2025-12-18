@@ -26,7 +26,7 @@ export const useRainfallData = () => {
     console.log('Connecting to Firebase for rain sensor...');
     
     // Path for rain sensor - giá trị 0 hoặc 1
-    const rainRef = ref(database, 'mua');
+    const rainRef = ref(database, 'sensor/mua');
 
     const handleRain = (snapshot: any) => {
       try {

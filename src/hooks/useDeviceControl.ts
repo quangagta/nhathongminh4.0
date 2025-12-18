@@ -11,10 +11,10 @@ export interface DeviceStates {
 
 // Mapping device keys to Firebase paths
 const devicePaths: Record<keyof DeviceStates, string> = {
-  light1: 'Den_TrangThai_HienThi',
-  light2: 'Den_TrangThai_HienThi',
-  fan: 'quat',
-  pump: 'Pump_TrangThai_HienThi'
+  light1: 'sensor/Den_TrangThai_HienThi',
+  light2: 'sensor/Den_TrangThai_HienThi',
+  fan: 'sensor/quat',
+  pump: 'sensor/Pump_TrangThai_HienThi'
 };
 
 /**
