@@ -100,6 +100,18 @@ export const useSensorHistory = () => {
       }
     }
 
+    // Low humidity alert - soil too dry, need watering
+    if (data.humidity < 40 && data.humidity > 0 && now_ms - lastAlertRef.current.humidity > 30000) {
+      toast.warning(`🌱 Đất khô! Độ ẩm ${data.humidity}% - Cần tưới nước`, {
+        duration: 5000,
+      });
+      lastAlertRef.current.humidity = now_ms;
+      if (settings.soundEnabled) {
+        playAlertSound(settings.soundDuration);
+      }
+    }
+
+    // High humidity alert
     if (data.humidity > 80 && now_ms - lastAlertRef.current.humidity > 30000) {
       toast.warning(`💧 Độ ẩm cao: ${data.humidity}%`, {
         duration: 5000,
