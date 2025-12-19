@@ -23,7 +23,7 @@ export const useFirebaseData = () => {
     console.log('Firebase database:', database);
     console.log('Connecting to Firebase...');
     
-    const tempRef = ref(database, 'sensor/nhietdo');
+    const tempRef = ref(database, 'sensor/doam');
     const gasRef = ref(database, 'sensor/khiga');
     const humidityRef = ref(database, 'sensor/dat'); // Đọc từ dat (analog 0-1023)
 
